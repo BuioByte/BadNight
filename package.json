@@ -1,0 +1,14 @@
+{
+  "name": "badnight",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "start": "npm start -w @badnight/engine",
+    "test": "npm test --workspaces"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
