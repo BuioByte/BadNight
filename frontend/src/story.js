@@ -61,15 +61,22 @@ export function createStory(el, { typeSound = () => {} } = {}) {
     typeNext();
   }
 
-  function entry(kind, text, animate) {
+  // `narrate`: scrivere il testo a macchina (ciò che arriva adesso) o mostrarlo subito (la storia passata,
+  // ricostruita dopo un ricaricamento o una riconnessione). Prima di startNarration il testo si mostra e,
+  // se va narrato, resta in attesa (data-typed="false").
+  function entry(kind, text, animate, narrate = animate) {
     const p = document.createElement('p');
     p.className = `entry entry-${kind}${animate ? ' entering' : ''}`;
+    // Prima nella pagina, poi in coda: typeNext salta gli elementi non (più) collegati al documento.
+    el.append(p);
     if (['intro', 'output', 'outro'].includes(kind)) {
       p.dataset.fullText = text;
-      if (started) enqueue(p, text);
-      else p.textContent = text;
+      if (narrate && started) enqueue(p, text);
+      else {
+        p.textContent = text;
+        p.dataset.typed = narrate ? 'false' : 'true';
+      }
     } else p.textContent = text;
-    el.append(p);
     el.scrollTop = el.scrollHeight;
   }
 
@@ -92,7 +99,7 @@ export function createStory(el, { typeSound = () => {} } = {}) {
     startNarration() {
       started = true;
       for (const p of el.querySelectorAll('.entry-intro, .entry-output, .entry-outro')) {
-        if (p.dataset.typed !== 'true') enqueue(p, p.dataset.fullText ?? p.textContent);
+        if (p.dataset.typed === 'false') enqueue(p, p.dataset.fullText ?? p.textContent);
       }
     },
 
@@ -111,17 +118,19 @@ export function createStory(el, { typeSound = () => {} } = {}) {
 
     // Da `state`: si ricostruisce tutto solo se la history non è quella già mostrata
     // (connessione, ricaricamento, reset); a fine turno di solito coincide.
+    // Nella ricostruzione la storia passata compare subito; si narra solo l'intro di una partita nuova.
     sync({ level, history, won }) {
       const outro = el.querySelector('.entry-outro');
-      if (history.length !== rendered || el.childElementCount === 0) {
+      const rebuilt = history.length !== rendered || el.childElementCount === 0;
+      if (rebuilt) {
         el.replaceChildren();
         rendered = 0;
-        if (level.intro) entry('intro', level.intro, false);
+        if (level.intro) entry('intro', level.intro, false, history.length === 0);
         for (const msg of history) add(msg, false);
       } else if (outro && !won) {
         outro.remove();
       }
-      if (won && level.outro && !el.querySelector('.entry-outro')) entry('outro', level.outro, true);
+      if (won && level.outro && !el.querySelector('.entry-outro')) entry('outro', level.outro, !rebuilt);
     },
   };
 }
