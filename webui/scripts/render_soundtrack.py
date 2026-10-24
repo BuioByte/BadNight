@@ -55,6 +55,27 @@ def add_note(frequency, start, duration, volume, voice, pan=0.0):
         right[sample] += value * right_gain
 
 
+def render_key_click(path, resonance, seed):
+    frames = bytearray()
+    previous_noise = 0.0
+    state = seed
+    for sample in range(int(SAMPLE_RATE * 0.075)):
+        time = sample / SAMPLE_RATE
+        state = (state * 1664525 + 1013904223) % 4294967296
+        noise = state / 2147483648.0 - 1.0
+        previous_noise = previous_noise * 0.35 + noise * 0.65
+        body = math.sin(2.0 * math.pi * resonance * time) * math.exp(-time / 0.016)
+        tick = math.sin(2.0 * math.pi * 2350 * time) * math.exp(-time / 0.004)
+        value = (previous_noise * 0.22 + body * 0.2 + tick * 0.14) * math.exp(-time / 0.028)
+        encoded = round(max(-1.0, min(1.0, value)) * 32767)
+        frames.extend(struct.pack('<hh', encoded, encoded))
+    with wave.open(str(path), 'wb') as click:
+        click.setnchannels(2)
+        click.setsampwidth(2)
+        click.setframerate(SAMPLE_RATE)
+        click.writeframes(frames)
+
+
 for bar in range(BAR_COUNT):
     chord = chords[bar % len(chords)]
     start = bar * SECONDS_PER_BAR
@@ -76,6 +97,8 @@ for sample in range(delay_two, LENGTH):
     right[sample] += dry_left[sample - delay_one] * 0.12 + dry_right[sample - delay_two] * 0.055
 
 OUTPUT.parent.mkdir(parents=True, exist_ok=True)
+render_key_click(OUTPUT.parent / 'type-key-1.wav', 470, 21)
+render_key_click(OUTPUT.parent / 'type-key-2.wav', 590, 37)
 with wave.open(str(OUTPUT), 'wb') as soundtrack:
     soundtrack.setnchannels(2)
     soundtrack.setsampwidth(2)

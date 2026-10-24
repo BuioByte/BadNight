@@ -27,7 +27,7 @@ The harness treats provider output as untrusted, validates tool names and argume
 
 ## Browser soundtrack
 
-- **User control:** Background music is opt-in through the visible music button, which also stops playback.
-- **Data and permissions:** The soundtrack is a local static asset. No audio is recorded, uploaded, or fetched from an external service; no new permission or API boundary is introduced.
-- **Input validation:** Not applicable; playback uses a fixed local asset and does not consume player text or other untrusted input.
+- **User control:** Background music and typing sounds are opt-in through the visible audio button, which also stops playback.
+- **Data and permissions:** Audio is synthesized into local static assets. No audio is recorded, uploaded, or fetched from an external service; no new permission or API boundary is introduced.
+- **Input validation:** Typing sounds are triggered by ordinary character key events and use fixed local assets; player text is not read by the sound system.
 - **Secrets and least privilege:** Not applicable; the feature uses no credentials, network access, or external service.

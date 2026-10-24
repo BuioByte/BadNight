@@ -54,7 +54,7 @@ The API server is not included on this branch. The Web UI requires a compatible 
 
 ## Soundtrack
 
-The Web UI has an opt-in, looping 32-second instrumental soundtrack. You can preview it from the sound button on the opening screen; it does not require the game API. The WAV is generated with Python's standard library and can be rerendered with `python3 webui/scripts/render_soundtrack.py`.
+The Web UI has an opt-in, looping 32-second instrumental soundtrack and soft alternating key sounds while typing. You can preview both from the audio button and action field; audio works on the opening screen without the game API. The WAV files are generated with Python's standard library and can be rerendered with `python3 webui/scripts/render_soundtrack.py`.
 
 ## Comandi
 

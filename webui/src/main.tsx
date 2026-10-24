@@ -1,7 +1,7 @@
 import React, { FormEvent, KeyboardEvent, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import type { CreateGameResponse, ErrorResponse, GameView, StoryMessage, TurnRequest, TurnResponse } from './api.types.js';
-import { disableSound, enableSound } from './sound.js';
+import { disableSound, enableSound, playTypeSound } from './sound.js';
 import './style.css';
 
 const roomPath = ['cameretta', 'salone', 'camera_genitori'];
@@ -81,6 +81,9 @@ function App() {
   }
 
   function onActionKey(event: KeyboardEvent<HTMLTextAreaElement>) {
+    if (soundOn.current && !event.ctrlKey && !event.metaKey && !event.altKey && !event.isComposing && event.key.length === 1) {
+      playTypeSound();
+    }
     if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
       event.preventDefault();
       void sendAction();
@@ -115,7 +118,7 @@ function App() {
             }
           }}
         >
-          {soundEnabled ? '♫ Musica attiva' : '♫ Attiva la musica'}
+          {soundEnabled ? '♫ Audio attivo' : '♫ Attiva audio'}
         </button>
       </header>
 
