@@ -41,7 +41,7 @@ così l'agente può correggersi.
 | `look` | | `room`, `objects`, `ghosts`, `exits` (con `open`), `progress` |
 | `examine` | `target` | `target`: descrizione (incluso lo stato), `state`, `actions` |
 | `act` | `target`, `action` | `text`, `changes` |
-| `move` | `to` | `text`, `changes` (se l'uscita è chiusa: testo `locked` e `changes` vuoto) |
+| `move` | `to` | `text`, `changes` (se l'uscita è chiusa: testo `locked` e `changes` vuoto). Alla vittoria `changes.won` è `true`; il testo non contiene l'`outro`, che mostra chi presenta la partita |
 | `talk` | `ghost` | `ghost` (nome, descrizione, `personality`, `voice`), `knowledge` |
 
 `talk` non genera il dialogo. Restituisce il contesto da passare a Gemma: la personalità del fantasma
@@ -71,7 +71,7 @@ e compare con l'effetto `reveal`.
 id: livello_1
 title: La prima notte
 intro: Testo iniziale.
-outro: Testo finale, mostrato quando si entra nella stanza goal.
+outro: Testo finale, da mostrare quando si entra nella stanza goal (non è nel testo di move).
 start: cameretta          # stanza di partenza
 goal: camera_genitori     # entrarci fa vincere
 

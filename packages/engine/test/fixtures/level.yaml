@@ -43,6 +43,15 @@ rooms:
       letto:
         name: Letto
         description: Il tuo letto, con le coperte arruffate.
+      porta:
+        name: Porta
+        description: La porta sul salone.
+        actions:
+          apri:
+            outcomes:
+              - text: La porta si apre.
+                effects:
+                  - complete: porta_aperta
 
   salone:
     name: Salone

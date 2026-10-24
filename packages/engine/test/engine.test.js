@@ -131,3 +131,15 @@ test('shutdown chiude i WebSocket aperti e il server', async () => {
   assert.equal(code, 1001);
   assert.equal(server.listening, false);
 });
+
+test('alla vittoria il finale non è in nessun output: lo mostra il frontend da level.outro', async () => {
+  const engine = createEngine(level, { agent: devAgent });
+  const messages = record(engine);
+  await engine.input('act porta apri');
+  await engine.input('move salone');
+
+  const state = messages.filter((m) => m.type === 'state').at(-1);
+  assert.equal(state.won, true);
+  assert.equal(state.level.outro, level.outro);
+  for (const m of messages.filter((m) => m.type === 'output')) assert.ok(!m.text.includes(level.outro), m.text);
+});

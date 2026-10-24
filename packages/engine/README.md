@@ -117,7 +117,7 @@ Messaggi JSON con un campo `type`.
 ```js
 {
   type: 'state',
-  level: { id, title, intro, outro },
+  level: { id, title, intro, outro },                     // outro: lo mostra il frontend quando won è true
   view: { room, objects, ghosts, exits, progress, won? },  // come il tool look
   completed: [{ id, description }],                       // traguardi
   won: false,
@@ -127,4 +127,6 @@ Messaggi JSON con un campo `type`.
 ```
 
 Con `history` il frontend ricostruisce la chat dopo un ricaricamento della pagina.
+Il finale (`level.outro`) non arriva in nessun `output` né nei risultati dei tool: il frontend lo mostra
+quando `won` è `true`.
 C'è una sola sessione: se ci sono più connessioni aperte, i messaggi arrivano a tutte.

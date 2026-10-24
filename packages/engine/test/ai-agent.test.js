@@ -73,6 +73,7 @@ test('al modello vanno i tool di gioco, non respond, e il prompt del livello', a
   assert.deepEqual(names, ['look', 'examine', 'act', 'move', 'talk']);
   assert.match(config.systemInstruction, /Livello di test/);
   assert.match(config.systemInstruction, /in italiano/);
+  assert.ok(!config.systemInstruction.includes(level.outro), 'il finale lo mostra la pagina, non il modello');
 });
 
 test('la conversazione continua tra i turni e riparte con una nuova partita', async () => {
