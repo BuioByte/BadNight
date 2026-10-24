@@ -1,14 +1,12 @@
 {
   "name": "badnight",
   "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
+  "packageManager": "pnpm@12.15.0",
+  "engines": { "node": ">=22" },
   "scripts": {
-    "start": "npm start -w @badnight/engine",
-    "test": "npm test --workspaces"
-  },
-  "engines": {
-    "node": ">=22"
+    "build": "pnpm --filter @badnight/agent-harness build && pnpm --filter @badnight/webui build",
+    "test": "pnpm --filter @badnight/level test && pnpm --filter @badnight/agent-harness test && pnpm --filter @badnight/webui typecheck",
+    "test:live": "pnpm --filter @badnight/agent-harness test:live",
+    "test:live:nim": "pnpm --filter @badnight/agent-harness test:live:nim"
   }
 }

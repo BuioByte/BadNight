@@ -1,3 +1,7 @@
+packages:
+  - packages/*
+  - webui
+
 allowBuilds:
   '@google/genai': false
   esbuild: true

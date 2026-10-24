@@ -1,0 +1,21 @@
+# BadNight Minimum Viable Secure Product
+
+This is the security baseline for the local hackfest prototype, informed by the [Minimum Viable Secure Product](https://mvsp.dev/) controls. It is a practical checklist, not a claim of formal certification.
+
+## Controls
+
+- **Secrets:** Keep `GEMINI_API_KEY`, `NVIDIA_API_KEY`, and compatible-provider keys in the backend environment or ignored root `.env`; never place them in Vite variables, browser code, logs, or commits. Revoke any key disclosed in chat or source control.
+- **Input validation:** Validate API request bodies against the shared JSON Schemas before using player input or game session identifiers.
+- **Least privilege:** Expose only the registered game tools to the agent. Validate tool names and arguments in the harness and keep game rules authoritative in the level engine.
+- **Transport and exposure:** Bind the development API to loopback by default. Do not expose the API or API key to an untrusted network.
+- **Data minimization:** Keep session state in memory for the local prototype. Do not persist player input or model conversations to disk.
+- **Dependencies:** Pin dependency ranges in manifests and use the committed pnpm lockfile for reproducible installs.
+- **Errors:** Return a generic API error to the browser; keep credentials and provider request headers out of responses.
+- **Availability:** Bound request body size and agent tool rounds. Sessions are local and disposable; restart clears them.
+
+## Not applicable yet
+
+- **Accounts, authorization, and multi-tenant isolation:** The prototype has no user accounts and binds to loopback. Add these controls before exposing a shared or public server.
+- **TLS and production deployment controls:** The app is intended for local hackfest use and has no production hosting configuration.
+- **Persistent data backup and deletion workflows:** Game state exists only in process memory and is discarded on restart.
+- **Automated vulnerability scanning and incident response:** This prototype has no production release pipeline or operator rotation. Add both before production use.

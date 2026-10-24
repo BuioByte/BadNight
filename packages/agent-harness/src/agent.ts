@@ -7,6 +7,7 @@ import {
   type FunctionDeclaration,
 } from '@google/genai';
 import type { Agent, AgentOptions, TurnInput, TurnResult } from './agent.types.js';
+import { createOpenAICompatibleClient } from './openai-compatible-client.js';
 
 const DEFAULT_TOOL_MODEL = 'gemma-4-31b-it';
 const DEFAULT_NARRATION_MODEL = 'gemma-4-26b-a4b-it';
@@ -62,13 +63,34 @@ export function createAgent(options: AgentOptions): Agent {
     ...(tool.parameters === undefined ? {} : { parametersJsonSchema: tool.parameters }),
   }));
 
-  const apiKey = options.apiKey ?? process.env.GEMINI_API_KEY;
-  if (!options.client && !apiKey) {
-    throw new Error('Set GEMINI_API_KEY or provide a Gemini client.');
+  const provider = options.provider ?? (process.env.AGENT_PROVIDER === 'openai-compatible' ? 'openai-compatible' : 'gemini');
+  let client = options.client;
+  if (!client && provider === 'gemini') {
+    const apiKey = options.apiKey ?? process.env.GEMINI_API_KEY;
+    if (!apiKey) throw new Error('Set GEMINI_API_KEY or provide a Gemini client.');
+    client = new GoogleGenAI({ apiKey });
   }
-  const client = options.client ?? new GoogleGenAI(apiKey === undefined ? {} : { apiKey });
-  const toolModel = options.toolModel ?? DEFAULT_TOOL_MODEL;
-  const narrationModel = options.narrationModel ?? DEFAULT_NARRATION_MODEL;
+  if (!client && provider === 'openai-compatible') {
+    const openAIOptions = options.openAICompatible;
+    const baseUrl = openAIOptions?.baseUrl ?? process.env.OPENAI_COMPATIBLE_BASE_URL ?? process.env.OPENAI_BASE_URL
+      ?? (process.env.NVIDIA_API_KEY ? process.env.NVIDIA_BASE_URL ?? 'https://integrate.api.nvidia.com/v1' : undefined);
+    const apiKey = openAIOptions?.apiKey ?? process.env.OPENAI_COMPATIBLE_API_KEY ?? process.env.OPENAI_API_KEY ?? process.env.NVIDIA_API_KEY;
+    client = createOpenAICompatibleClient({
+      ...(baseUrl === undefined ? {} : { baseUrl }),
+      ...(apiKey === undefined ? {} : { apiKey }),
+      ...(openAIOptions?.fetch ? { fetch: openAIOptions.fetch } : {}),
+    });
+  }
+  if (!client) throw new Error(`Unsupported agent provider "${provider}".`);
+
+  const openAIOptions = options.openAICompatible;
+  const toolModel = options.toolModel
+    ?? (provider === 'gemini' ? DEFAULT_TOOL_MODEL : openAIOptions?.toolModel ?? process.env.OPENAI_COMPATIBLE_TOOL_MODEL ?? process.env.OPENAI_MODEL ?? process.env.NVIDIA_TOOL_MODEL ?? process.env.NVIDIA_MODEL ?? (process.env.NVIDIA_API_KEY ? 'deepseek-ai/deepseek-v4.1-flash' : undefined));
+  const narrationModel = options.narrationModel
+    ?? (provider === 'gemini' ? DEFAULT_NARRATION_MODEL : openAIOptions?.narrationModel ?? process.env.OPENAI_COMPATIBLE_NARRATION_MODEL ?? process.env.OPENAI_MODEL ?? process.env.NVIDIA_NARRATION_MODEL ?? process.env.NVIDIA_MODEL ?? toolModel);
+  if (!toolModel || !narrationModel) {
+    throw new Error('Set OPENAI_COMPATIBLE_TOOL_MODEL and OPENAI_COMPATIBLE_NARRATION_MODEL, OPENAI_MODEL, or NVIDIA_API_KEY.');
+  }
 
   return {
     async runTurn({ action, thinking, history = [] }: TurnInput): Promise<TurnResult> {

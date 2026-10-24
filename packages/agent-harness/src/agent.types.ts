@@ -1,5 +1,5 @@
 import type { AnySchema } from 'ajv';
-import type { Content, GoogleGenAI } from '@google/genai';
+import type { Content, GenerateContentParameters, GenerateContentResponse, GoogleGenAI } from '@google/genai';
 
 export interface AgentTool {
   name: string;
@@ -25,11 +25,27 @@ export interface ToolRegistry {
 export interface AgentOptions {
   systemInstruction: string;
   registry: ToolRegistry;
+  provider?: 'gemini' | 'openai-compatible';
   apiKey?: string;
-  client?: GoogleGenAI;
+  openAICompatible?: OpenAICompatibleOptions;
+  client?: AgentClient | GoogleGenAI;
   toolModel?: string;
   narrationModel?: string;
   maxToolRounds?: number;
+}
+
+export interface AgentClient {
+  models: {
+    generateContent(request: GenerateContentParameters): Promise<GenerateContentResponse>;
+  };
+}
+
+export interface OpenAICompatibleOptions {
+  baseUrl?: string;
+  apiKey?: string;
+  toolModel?: string;
+  narrationModel?: string;
+  fetch?: typeof fetch;
 }
 
 export interface TurnInput {

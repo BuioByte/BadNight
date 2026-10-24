@@ -11,8 +11,9 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "pnpm build && node --test dist/test/agent.test.js",
-    "test:live": "pnpm build && node --env-file-if-exists=../../.env --test dist/test/live-gemini.test.js"
+    "test": "pnpm build && node --test dist/test/agent.test.js dist/test/openai-compatible-client.test.js",
+    "test:live": "pnpm build && node --env-file-if-exists=../../.env --test dist/test/live-gemini.test.js",
+    "test:live:nim": "pnpm build && node --env-file-if-exists=../../.env --test dist/test/live-nim.test.js"
   },
   "packageManager": "pnpm@12.15.0+sha512.b3951d6d6ff4a9f13dc7cf56cd28d2b8eb37dbcc9c68e52e1e1191873ea9f82a017287ab50baadc5ccc494f036c67c0e47eb13608c2fa36f47711b61ea128e61",
   "dependencies": {
