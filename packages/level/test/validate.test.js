@@ -61,7 +61,7 @@ rooms:
 `);
   assert.deepEqual(errors, [
     'rooms.a: chiave sconosciuta "colour" (ammesse: name, description, milestones, exits, objects, ghosts, asset)',
-    'rooms.a.objects.scatola.actions.apri.outcomes[0].effects[2]: effetto sconosciuto "teleport" (ammessi: set_state, give, remove, complete, reveal, hide)',
+    'rooms.a.objects.scatola.actions.apri.outcomes[0].effects[2]: effetto sconosciuto "teleport" (ammessi: set_state, complete, reveal, hide)',
     'goal: stanza sconosciuta "z"',
     'rooms.a.objects.scatola.actions.apri.outcomes[0].if.visited: stanza sconosciuta "soffitta"',
     'rooms.a.objects.scatola.actions.apri.outcomes[0].effects[0]: "scatola" non ha lo stato "rotta" (stati: chiusa, aperta)',
@@ -78,8 +78,6 @@ id: assets
 title: Assets
 start: a
 goal: b
-items:
-  candela: { name: Candela, asset: item_candela }
 rooms:
   a:
     name: A
@@ -94,17 +92,16 @@ rooms:
     description: Stanza B.
 `;
 
-test('conserva gli asset di stanze, oggetti, fantasmi e inventario', () => {
+test('conserva gli asset di stanze, oggetti e fantasmi', () => {
   const level = parseLevel(assetSource);
   assert.equal(level.rooms.a.asset, 'room_a');
-  assert.equal(level.items.candela.asset, 'item_candela');
   assert.equal(level.entities.zucca.asset, 'object_zucca');
   assert.equal(level.entities.pip.asset, 'ghost_pip');
   assert.equal(Object.hasOwn(level.rooms.b, 'asset'), false);
 });
 
 test('gli asset sono facoltativi e devono essere identificativi logici validi', () => {
-  for (const id of ['room_a', 'item_candela', 'object_zucca', 'ghost_pip']) {
+  for (const id of ['room_a', 'object_zucca', 'ghost_pip']) {
     for (const invalid of ['null', '42', '""', '[]', '{}', 'images/asset.png', 'Asset']) {
       const errors = errorsOf(assetSource.replace(`asset: ${id}`, `asset: ${invalid}`));
       assert.equal(errors.length, 1);
@@ -112,12 +109,12 @@ test('gli asset sono facoltativi e devono essere identificativi logici validi', 
     }
   }
   const level = parseLevel(assetSource.replaceAll(/,? asset: \w+/g, ''));
-  assert.equal(Object.hasOwn(level.items.candela, 'asset'), false);
   assert.equal(Object.hasOwn(level.entities.zucca, 'asset'), false);
   assert.equal(Object.hasOwn(level.entities.pip, 'asset'), false);
 });
 
-test('rifiuta riferimenti a item sconosciuti nelle condizioni e negli effetti', () => {
+test('rifiuta le strutture di inventario non supportate', () => {
+  assert.match(errorsOf(`${assetSource}\nitems: {}`)[0], /livello: chiave sconosciuta "items"/);
   const source = assetSource.replace(
     'zucca: { name: Zucca, asset: object_zucca }',
     `zucca:
@@ -131,14 +128,14 @@ test('rifiuta riferimenti a item sconosciuti nelle condizioni e negli effetti', 
                 - remove: mancante`,
   );
   assert.deepEqual(errorsOf(source), [
-    'rooms.a.objects.zucca.actions.apri.outcomes[0].if.has: item sconosciuto "mancante"',
-    'rooms.a.objects.zucca.actions.apri.outcomes[0].effects[0]: item sconosciuto "mancante"',
-    'rooms.a.objects.zucca.actions.apri.outcomes[0].effects[1]: item sconosciuto "mancante"',
+    'rooms.a.objects.zucca.actions.apri.outcomes[0].effects[0]: effetto sconosciuto "give" (ammessi: set_state, complete, reveal, hide)',
+    'rooms.a.objects.zucca.actions.apri.outcomes[0].effects[1]: effetto sconosciuto "remove" (ammessi: set_state, complete, reveal, hide)',
+    'rooms.a.objects.zucca.actions.apri.outcomes[0].if.has: condizione sconosciuta (ammesse: completed, visited, state, not, all, any)',
   ]);
 });
 
-test('rifiuta id condivisi tra inventario ed entita', () => {
-  const errors = errorsOf(assetSource.replace('candela: { name: Candela', 'zucca: { name: Candela'));
+test('rifiuta id condivisi tra oggetti e fantasmi', () => {
+  const errors = errorsOf(assetSource.replace('pip: { name: Pip', 'zucca: { name: Pip'));
   assert.equal(errors.length, 1);
-  assert.match(errors[0], /rooms\.a\.objects\.zucca: id "zucca" gia|rooms\.a\.objects\.zucca: id "zucca" già/);
+  assert.match(errors[0], /rooms\.a\.ghosts\.zucca: id "zucca"/);
 });

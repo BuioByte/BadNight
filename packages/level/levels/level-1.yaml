@@ -12,36 +12,6 @@ outro: >-
   Ti tuffi nel lettone, tra mamma e papà. Dalla porta, i fantasmi
   ti salutano con la mano. Buonanotte!
 
-items:
-  candela:
-    name: Mozzicone di candela
-    asset: item_candela
-    description: Una candela consumata, ancora buona per fare un po' di luce.
-  chiave:
-    name: Chiave di ferro
-    asset: item_chiave
-    description: Una chiave pesante e fredda, con un fiocco rosso legato all'anello.
-  spartito:
-    name: Spartito
-    asset: item_spartito
-    description: 'Una ninna nanna illustrata: da sinistra a destra, zucca, fantasma, pipistrello. Il titolo dice "Per la porta che dorme".'
-  caramella_finta:
-    name: Caramella finta
-    asset: item_caramella_finta
-    description: Una caramella di stoffa, perfetta per un giocattolo goloso.
-  ritratto_sinistra:
-    name: Ritratto con papillon a sinistra
-    asset: item_ritratto_sinistra
-    description: Ernesto con il papillon inclinato a sinistra; le estremità sono ad altezze diverse.
-  ritratto_destra:
-    name: Ritratto con papillon a destra
-    asset: item_ritratto_destra
-    description: Ernesto con il papillon inclinato a destra; le estremità sono ad altezze diverse.
-  ritratto_dritto:
-    name: Ritratto con papillon dritto
-    asset: item_ritratto_dritto
-    description: Ernesto con il papillon perfettamente dritto e le estremità alla stessa altezza.
-
 rooms:
   cameretta:
     name: Cameretta
@@ -83,7 +53,12 @@ rooms:
               - text: Apri il cassetto e trovi un mozzicone di candela. Peccato che sia spento.
                 effects:
                   - set_state: { comodino: aperto }
-                  - give: candela
+                  - reveal: candela
+      candela:
+        name: Mozzicone di candela
+        asset: item_candela
+        description: Una candela consumata nel cassetto del comodino, ancora buona per fare un po' di luce.
+        hidden: true
       zucca:
         name: Zucca senza sorriso
         asset: object_zucca
@@ -98,10 +73,10 @@ rooms:
             outcomes:
               - if: { not: { state: { zucca: vuota } } }
                 text: La candela è già nella zucca.
-              - if: { has: candela }
+              - if: { state: { comodino: aperto } }
                 text: Inserisci la candela nella zucca. Ora serve una scintilla magica.
                 effects:
-                  - remove: candela
+                  - hide: candela
                   - set_state: { zucca: candela_inserita }
               - text: Devi prima trovare una candela.
       cestino:
@@ -116,10 +91,15 @@ rooms:
             outcomes:
               - if: { state: { cestino: vuoto } }
                 text: Non trovi altre caramelle finte.
-              - text: Prendi una caramella finta di stoffa.
+              - text: Scopri una caramella finta di stoffa sul bordo del cestino.
                 effects:
-                  - give: caramella_finta
+                  - reveal: caramella_finta
                   - set_state: { cestino: vuoto }
+      caramella_finta:
+        name: Caramella finta
+        asset: item_caramella_finta
+        description: Una caramella di stoffa sul bordo del cestino, perfetta per un giocattolo goloso.
+        hidden: true
       letto:
         name: Letto
         asset: object_letto
@@ -145,14 +125,19 @@ rooms:
             description: Offrire la caramella finta al peluche.
             outcomes:
               - if: { completed: chiave_trovata }
-                text: Il pipistrello è sazio e ti ha già dato la chiave.
-              - if: { has: caramella_finta }
-                text: Il pipistrello abbraccia il dolcetto di stoffa e lascia cadere la chiave.
+                text: Il pipistrello è sazio e ha già lasciato la chiave.
+              - if: { state: { cestino: vuoto } }
+                text: Il pipistrello raggiunge il dolcetto di stoffa e lascia cadere la chiave accanto alla porta.
                 effects:
-                  - remove: caramella_finta
-                  - give: chiave
+                  - hide: caramella_finta
+                  - reveal: chiave
                   - complete: chiave_trovata
               - text: Il peluche aspetta un dolcetto per giocattoli.
+      chiave:
+        name: Chiave di ferro
+        asset: item_chiave
+        description: Una chiave pesante e fredda accanto alla porta, con un fiocco rosso legato all'anello.
+        hidden: true
       porta:
         name: Porta
         asset: object_porta_cameretta
@@ -165,11 +150,11 @@ rooms:
             outcomes:
               - if: { state: { porta: aperta } }
                 text: La porta è già aperta.
-              - if: { has: chiave }
+              - if: { completed: chiave_trovata }
                 text: La chiave gira con un clic e la porta si apre cigolando.
                 effects:
                   - set_state: { porta: aperta }
-                  - remove: chiave
+                  - hide: chiave
                   - complete: porta_aperta
               - text: La maniglia non si muove. Serve una chiave.
     ghosts:
@@ -251,40 +236,53 @@ rooms:
         name: Tavolino dei ritratti
         asset: object_tavolino
         description: Tre ritratti mostrano Ernesto con il papillon inclinato a sinistra, a destra o perfettamente dritto.
+        states:
+          nessuno: Non hai ancora indicato un ritratto.
+          sinistra: Hai indicato il ritratto con il papillon inclinato a sinistra.
+          destra: Hai indicato il ritratto con il papillon inclinato a destra.
+          dritto: Hai indicato il ritratto con il papillon dritto.
         actions:
           scegli_sinistra:
-            description: Prendere il ritratto con il papillon inclinato a sinistra.
+            description: Indicare il ritratto con il papillon inclinato a sinistra.
             outcomes:
               - if: { completed: spartito_trovato }
                 text: Ernesto ha già sistemato il papillon.
-              - text: Scegli il ritratto con il papillon inclinato a sinistra e rimetti gli altri sul tavolino.
+              - text: Indichi sul tavolino il ritratto con il papillon inclinato a sinistra.
                 effects:
-                  - remove: ritratto_sinistra
-                  - remove: ritratto_destra
-                  - remove: ritratto_dritto
-                  - give: ritratto_sinistra
+                  - set_state: { tavolino: sinistra }
           scegli_destra:
-            description: Prendere il ritratto con il papillon inclinato a destra.
+            description: Indicare il ritratto con il papillon inclinato a destra.
             outcomes:
               - if: { completed: spartito_trovato }
                 text: Ernesto ha già sistemato il papillon.
-              - text: Scegli il ritratto con il papillon inclinato a destra e rimetti gli altri sul tavolino.
+              - text: Indichi sul tavolino il ritratto con il papillon inclinato a destra.
                 effects:
-                  - remove: ritratto_sinistra
-                  - remove: ritratto_destra
-                  - remove: ritratto_dritto
-                  - give: ritratto_destra
+                  - set_state: { tavolino: destra }
           scegli_dritto:
-            description: Prendere il ritratto con il papillon dritto.
+            description: Indicare il ritratto con il papillon dritto.
             outcomes:
               - if: { completed: spartito_trovato }
                 text: Ernesto ha già sistemato il papillon.
-              - text: Scegli il ritratto con il papillon dritto e rimetti gli altri sul tavolino.
+              - text: Indichi sul tavolino il ritratto con il papillon dritto.
                 effects:
-                  - remove: ritratto_sinistra
-                  - remove: ritratto_destra
-                  - remove: ritratto_dritto
-                  - give: ritratto_dritto
+                  - set_state: { tavolino: dritto }
+      ritratto_sinistra:
+        name: Ritratto con papillon a sinistra
+        asset: item_ritratto_sinistra
+        description: Sul tavolino, Ernesto con il papillon inclinato a sinistra; le estremità sono ad altezze diverse.
+      ritratto_destra:
+        name: Ritratto con papillon a destra
+        asset: item_ritratto_destra
+        description: Sul tavolino, Ernesto con il papillon inclinato a destra; le estremità sono ad altezze diverse.
+      ritratto_dritto:
+        name: Ritratto con papillon dritto
+        asset: item_ritratto_dritto
+        description: Sul tavolino, Ernesto con il papillon perfettamente dritto e le estremità alla stessa altezza.
+      spartito:
+        name: Spartito
+        asset: item_spartito
+        description: 'Sul pianoforte, una ninna nanna illustrata: da sinistra a destra, zucca, fantasma, pipistrello. Il titolo dice "Per la porta che dorme".'
+        hidden: true
       pianoforte:
         name: Pianoforte
         asset: object_pianoforte
@@ -300,7 +298,7 @@ rooms:
             outcomes:
               - if: { completed: ninna_nanna_suonata }
                 text: La porta è già sveglia. Ofelia sorride.
-              - if: { not: { has: spartito } }
+              - if: { not: { completed: spartito_trovato } }
                 text: Senza spartito non sai quale melodia suonare.
               - if: { state: { pianoforte: inizio } }
                 text: Suoni la zucca. Ofelia annuisce.
@@ -314,7 +312,7 @@ rooms:
             outcomes:
               - if: { completed: ninna_nanna_suonata }
                 text: La porta è già sveglia. Ofelia sorride.
-              - if: { not: { has: spartito } }
+              - if: { not: { completed: spartito_trovato } }
                 text: Senza spartito non sai quale melodia suonare.
               - if: { state: { pianoforte: zucca_premuta } }
                 text: Suoni il fantasma. Ofelia comincia a cantare.
@@ -328,7 +326,7 @@ rooms:
             outcomes:
               - if: { completed: ninna_nanna_suonata }
                 text: La porta è già sveglia. Ofelia sorride.
-              - if: { not: { has: spartito } }
+              - if: { not: { completed: spartito_trovato } }
                 text: Senza spartito non sai quale melodia suonare.
               - if: { state: { pianoforte: fantasma_premuto } }
                 text: >-
@@ -361,25 +359,24 @@ rooms:
           e sospira spesso. Parla per frasi brevi e corrette.
         knowledge:
           - if: { not: { completed: spartito_trovato } }
-            text: Ha il papillon storto e non ha riflesso. Chiede il ritratto con il papillon in ordine come modello e promette uno spartito in cambio.
+            text: Ha il papillon storto e non ha riflesso. Chiede di indicare il ritratto con il papillon in ordine come modello e promette di svelare uno spartito.
           - if: { not: { completed: spartito_trovato } }
             text: Le due estremità del papillon devono stare alla stessa altezza. I tre ritratti sono sul tavolino.
           - text: La porta dietro l'arazzo porta alla camera dei padroni di casa.
         actions:
-          consegna_ritratto:
-            description: Consegnare a Ernesto il ritratto scelto sul tavolino.
+          mostra_ritratto:
+            description: Mostrare a Ernesto il ritratto indicato sul tavolino.
             outcomes:
               - if: { completed: spartito_trovato }
-                text: '"Il papillon è a posto e lo spartito è già vostro. Grazie!"'
-              - if: { has: ritratto_dritto }
-                text: Ernesto usa il ritratto come modello, sistema il papillon e ti consegna lo spartito dalla giacca.
+                text: '"Il papillon è a posto e lo spartito è sul pianoforte. Grazie!"'
+              - if: { state: { tavolino: dritto } }
+                text: Ernesto guarda il ritratto sul tavolino, sistema il papillon e posa lo spartito sul pianoforte.
                 effects:
-                  - remove: ritratto_dritto
-                  - give: spartito
+                  - reveal: spartito
                   - complete: spartito_trovato
-              - if: { any: [{ has: ritratto_sinistra }, { has: ritratto_destra }] }
-                text: '"Ma qui è storto quanto il mio!" Ernesto ti restituisce il ritratto. Puoi sceglierne un altro.'
-              - text: '"Scegliete un ritratto sul tavolino e portatemelo, per cortesia."'
+              - if: { any: [{ state: { tavolino: sinistra } }, { state: { tavolino: destra } }] }
+                text: '"Ma qui è storto quanto il mio!" Puoi indicare un altro ritratto sul tavolino.'
+              - text: '"Indicate un ritratto sul tavolino e mostratemelo, per cortesia."'
       ofelia:
         name: Ofelia
         asset: ghost_ofelia

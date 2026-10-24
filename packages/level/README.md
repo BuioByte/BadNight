@@ -75,12 +75,6 @@ outro: Testo finale, mostrato quando si entra nella stanza goal.
 start: cameretta          # stanza di partenza
 goal: camera_genitori     # entrarci fa vincere
 
-items:                    # oggetti che possono finire nell'inventario
-  chiave:
-    name: Chiave
-    description: ...
-    actions: { ... }      # opzionale, come per gli oggetti
-
 rooms:
   cameretta:
     name: Cameretta
@@ -96,6 +90,11 @@ rooms:
         requires: [porta_aperta]     # traguardi che sbloccano l'uscita
         locked: Testo se è chiusa.
     objects:
+      chiave:
+        name: Chiave
+        asset: object_chiave
+        description: ...
+        hidden: true      # resta nella stanza; un'azione la rivela con `reveal`
       porta:
         name: Porta
         asset: object_porta_cameretta
@@ -131,15 +130,15 @@ rooms:
 ### Asset grafici
 
 Il campo facoltativo `asset` identifica la risorsa grafica di una stanza (sfondo), un oggetto,
-un fantasma o un elemento dell'inventario. Deve rispettare il formato `[a-z][a-z0-9_]*`.
-Nel livello 1 i prefissi sono `room_`, `object_`, `ghost_` e `item_`.
+o un fantasma. Deve rispettare il formato `[a-z][a-z0-9_]*`.
+Il prefisso non determina il tipo di elemento: gli identificativi esistenti restano validi.
 
 Sono identificativi logici, non percorsi o URL: il frontend li associa ai file effettivi.
 Il caricatore valida il formato, non l'esistenza dei file; lo stesso asset si puo' riutilizzare.
 Il campo non modifica le regole di gioco e non e' obbligatorio nei livelli esistenti.
 
 `look`, `examine` e `talk` restituiscono `asset` insieme ai dati degli elementi visibili.
-Anche i riferimenti in `changes` (stati, inventario, elementi rivelati/nascosti e stanza)
+Anche i riferimenti in `changes` (stati, elementi rivelati/nascosti e stanza)
 lo includono quando presente. Gli elementi nascosti restano esclusi dalle viste fino alla scoperta.
 L'asset identifica l'elemento indipendentemente dal suo stato; eventuali varianti grafiche
 possono essere selezionate dal frontend usando anche `state` o i cambiamenti di stato.

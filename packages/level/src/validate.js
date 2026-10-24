@@ -2,8 +2,8 @@
 // Raccoglie tutti gli errori (con il percorso nel file) invece di fermarsi al primo.
 
 const ID_RE = /^[a-z][a-z0-9_]*$/;
-const CONDITIONS = ['completed', 'has', 'visited', 'state', 'not', 'all', 'any'];
-const EFFECTS = ['set_state', 'give', 'remove', 'complete', 'reveal', 'hide'];
+const CONDITIONS = ['completed', 'visited', 'state', 'not', 'all', 'any'];
+const EFFECTS = ['set_state', 'complete', 'reveal', 'hide'];
 
 export class LevelError extends Error {
   constructor(errors) {
@@ -93,9 +93,6 @@ export function validateLevel(raw) {
         case 'completed':
           refs(idList(v, p), level.milestones, 'traguardo sconosciuto', p);
           break;
-        case 'has':
-          refs(idList(v, p), level.items, 'item sconosciuto', p);
-          break;
         case 'visited':
           refs(idList(v, p), level.rooms, 'stanza sconosciuta', p);
           break;
@@ -137,11 +134,6 @@ export function validateLevel(raw) {
             effects.push({ type, target, state });
             deferred.push(() => checkState(target, state, p));
           }
-          break;
-        case 'give':
-        case 'remove':
-          for (const item of idList(arg, p)) effects.push({ type, item });
-          deferred.push(() => refs(idList(arg, p), level.items, 'item sconosciuto', p));
           break;
         case 'complete':
           for (const milestone of idList(arg, p)) effects.push({ type, milestone });
@@ -185,7 +177,7 @@ export function validateLevel(raw) {
     return actions;
   }
 
-  keys(raw, 'livello', ['id', 'title', 'intro', 'outro', 'start', 'goal', 'items', 'rooms'], ['id', 'title', 'start', 'goal', 'rooms']);
+  keys(raw, 'livello', ['id', 'title', 'intro', 'outro', 'start', 'goal', 'rooms'], ['id', 'title', 'start', 'goal', 'rooms']);
 
   const level = {
     id: raw.id,
@@ -194,24 +186,10 @@ export function validateLevel(raw) {
     outro: text(raw, 'outro', 'livello'),
     start: raw.start,
     goal: raw.goal,
-    items: {},
     rooms: {},
     entities: {},
     milestones: {},
   };
-
-  for (const [id, it] of entries(raw.items, 'items')) {
-    const p = `items.${id}`;
-    if (!keys(it, p, ['name', 'description', 'actions', 'asset'], ['name'])) continue;
-    level.items[id] = {
-      id,
-      kind: 'item',
-      name: text(it, 'name', p),
-      description: text(it, 'description', p),
-      ...parseAsset(it, p),
-      actions: parseActions(it.actions, `${p}.actions`),
-    };
-  }
 
   for (const [roomId, r] of entries(raw.rooms, 'rooms')) {
     const p = `rooms.${roomId}`;
@@ -260,7 +238,7 @@ export function validateLevel(raw) {
           ? ['name', 'description', 'states', 'hidden', 'actions', 'asset']
           : ['name', 'description', 'personality', 'voice', 'knowledge', 'hidden', 'actions', 'asset'];
         if (!keys(e, xp, allowed, kind === 'object' ? ['name'] : ['name', 'personality'])) continue;
-        if (level.entities[id] || level.items[id]) {
+        if (level.entities[id]) {
           err(xp, `id "${id}" già usato da un altro oggetto o fantasma`);
           continue;
         }

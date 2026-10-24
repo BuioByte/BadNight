@@ -27,7 +27,7 @@ The harness treats provider output as untrusted, validates tool names and argume
 
 ## Level merge compatibility
 
-- Validate item references, inventory conditions and effects, and asset identifiers when loading a level. Reject unknown references rather than applying partial rules.
-- Keep game state authoritative: tools may examine only visible local entities and carried items. Hidden entities remain unavailable until revealed.
+- Validate entity references, conditions, effects, and asset identifiers when loading a level. Reject unknown references and unsupported keys rather than applying partial rules.
+- Keep game state authoritative: tools may examine only visible entities in the current room. Objects remain in their rooms; progression uses entity states and milestones. Hidden entities remain unavailable until revealed.
 - Assets are logical identifiers, not URLs or filesystem paths; resolving them must not grant tools file or network access.
 - This compatibility repair introduces no credentials, persistence, authentication, or network endpoints; related controls remain unchanged and production controls remain out of scope for the local prototype.
