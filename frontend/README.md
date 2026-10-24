@@ -42,7 +42,7 @@ l'engine è partito su un'altra porta.
 | `src/style.css` | tema gotico |
 | `src/sound.js` | musica, suoni dei tasti e volumi del mixer |
 
-Il mixer nell'intestazione attiva l'audio e regola separatamente volume master, musica e tasti. Le tracce WAV sono locali e si rigenerano dalla radice del repository con `python3 frontend/scripts/render_soundtrack.py`.
+L'audio è attivo per impostazione predefinita. Il mixer nell'intestazione regola separatamente volume master, musica e tasti e può disattivare l'audio. Se il browser blocca l'avvio automatico, la riproduzione parte alla prima interazione. Le tracce WAV sono locali e si rigenerano dalla radice del repository con `python3 frontend/scripts/render_soundtrack.py`.
 
 ## Si aspetta sempre la risposta
 
