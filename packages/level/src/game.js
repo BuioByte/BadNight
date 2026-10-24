@@ -8,7 +8,7 @@ import { toolDefinitions } from './tools.js';
 const GAME_OVER = 'La partita è finita: il bambino è al sicuro nel lettone.';
 
 const fail = (error) => ({ ok: false, error });
-const ref = ({ id, name }) => ({ id, name });
+const ref = ({ id, name, asset }) => ({ id, name, ...(asset && { asset }) });
 const list = (v) => (Array.isArray(v) ? v : [v]);
 const exitOpen = (exit, s) => exit.requires.every((m) => s.completed.includes(m));
 
@@ -103,7 +103,7 @@ export class Game {
     const room = L.rooms[s.room];
     return {
       ok: true,
-      room: { id: room.id, name: room.name, description: room.description },
+      room: { ...ref(room), description: room.description },
       objects: this.#visible(room.objects).map(ref),
       ghosts: this.#visible(room.ghosts).map(ref),
       exits: room.exits.map((e) => ({
@@ -125,9 +125,8 @@ export class Game {
     return {
       ok: true,
       target: {
-        id: t.id,
+        ...ref(t),
         kind: t.kind,
-        name: t.name,
         description: [t.description, state && t.states[state]].filter(Boolean).join(' '),
         ...(state && { state }),
         actions: Object.values(t.actions).map((a) => ({ name: a.name, ...(a.description && { description: a.description }) })),
@@ -184,8 +183,7 @@ export class Game {
     return {
       ok: true,
       ghost: {
-        id: g.id,
-        name: g.name,
+        ...ref(g),
         description: g.description,
         personality: g.personality,
         ...(g.voice && { voice: g.voice }),
@@ -258,7 +256,7 @@ export class Game {
     for (const [id, n] of Object.entries(next.entities)) {
       const p = prev.entities[id];
       const e = L.entities[id];
-      if (p.state !== n.state) states.push({ id, name: e.name, from: p.state, to: n.state });
+      if (p.state !== n.state) states.push({ ...ref(e), from: p.state, to: n.state });
       if (p.hidden && !n.hidden) revealed.push(ref(e));
       if (!p.hidden && n.hidden) hidden.push(ref(e));
     }

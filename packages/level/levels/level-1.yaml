@@ -15,26 +15,49 @@ outro: >-
 items:
   candela:
     name: Mozzicone di candela
+    asset: item_candela
     description: Una candela consumata, ancora buona per fare un po' di luce.
   chiave:
     name: Chiave di ferro
+    asset: item_chiave
     description: Una chiave pesante e fredda, con un fiocco rosso legato all'anello.
   spartito:
     name: Spartito
-    description: Un foglio ingiallito con una ninna nanna. Il titolo dice "Per la porta che dorme".
+    asset: item_spartito
+    description: 'Una ninna nanna illustrata: da sinistra a destra, zucca, fantasma, pipistrello. Il titolo dice "Per la porta che dorme".'
+  caramella_finta:
+    name: Caramella finta
+    asset: item_caramella_finta
+    description: Una caramella di stoffa, perfetta per un giocattolo goloso.
+  ritratto_sinistra:
+    name: Ritratto con papillon a sinistra
+    asset: item_ritratto_sinistra
+    description: Ernesto con il papillon inclinato a sinistra; le estremità sono ad altezze diverse.
+  ritratto_destra:
+    name: Ritratto con papillon a destra
+    asset: item_ritratto_destra
+    description: Ernesto con il papillon inclinato a destra; le estremità sono ad altezze diverse.
+  ritratto_dritto:
+    name: Ritratto con papillon dritto
+    asset: item_ritratto_dritto
+    description: Ernesto con il papillon perfettamente dritto e le estremità alla stessa altezza.
 
 rooms:
   cameretta:
     name: Cameretta
+    asset: room_cameretta
     description: >-
       La tua cameretta, ma di notte sembra un'altra: le ombre dei giocattoli
       si allungano sulle pareti.
     milestones:
       candela_accesa:
         description: La candela è accesa.
+      peluche_scoperto:
+        description: Hai scoperto il pipistrello di peluche sotto il letto.
+        requires: [candela_accesa]
       chiave_trovata:
         description: Hai trovato la chiave della porta.
-        requires: [candela_accesa]
+        requires: [peluche_scoperto]
       porta_aperta:
         description: La porta della cameretta è aperta.
         requires: [chiave_trovata]
@@ -46,6 +69,7 @@ rooms:
     objects:
       comodino:
         name: Comodino
+        asset: object_comodino
         description: Il comodino accanto al letto, con un cassetto.
         states:
           chiuso: Il cassetto è chiuso.
@@ -60,27 +84,78 @@ rooms:
                 effects:
                   - set_state: { comodino: aperto }
                   - give: candela
+      zucca:
+        name: Zucca senza sorriso
+        asset: object_zucca
+        description: 'Una zucca-lanterna sul comodino. Una scritta dice: "Ho occhi e bocca, ma senza luce non posso sorridere".'
+        states:
+          vuota: La zucca è vuota e spenta.
+          candela_inserita: Dentro la zucca c'è una candela spenta.
+          accesa: Una fiamma azzurra proietta sotto il letto l'ombra di un pipistrello.
+        actions:
+          inserisci_candela:
+            description: Inserire la candela nella zucca.
+            outcomes:
+              - if: { not: { state: { zucca: vuota } } }
+                text: La candela è già nella zucca.
+              - if: { has: candela }
+                text: Inserisci la candela nella zucca. Ora serve una scintilla magica.
+                effects:
+                  - remove: candela
+                  - set_state: { zucca: candela_inserita }
+              - text: Devi prima trovare una candela.
+      cestino:
+        name: Cestino dei giocattoli
+        asset: object_cestino
+        description: Un cestino pieno di giocattoli e dolcetti di stoffa.
+        states:
+          pieno: Tra i giocattoli spunta una caramella finta.
+          vuoto: Non ci sono altri dolcetti di stoffa.
+        actions:
+          cerca:
+            outcomes:
+              - if: { state: { cestino: vuoto } }
+                text: Non trovi altre caramelle finte.
+              - text: Prendi una caramella finta di stoffa.
+                effects:
+                  - give: caramella_finta
+                  - set_state: { cestino: vuoto }
       letto:
         name: Letto
+        asset: object_letto
         description: Il tuo letto, con le coperte tutte arruffate.
         actions:
           guarda_sotto:
             description: Guardare sotto il letto.
             outcomes:
-              # Completa chiave_trovata, che richiede candela_accesa: finché la candela
-              # è spenta l'engine salta questo esito e passa ai successivi.
-              - if: { not: { completed: chiave_trovata } }
-                text: >-
-                  Alla luce della candela vedi qualcosa luccicare tra la polvere:
-                  una chiave di ferro con un fiocco rosso!
+              - if: { completed: peluche_scoperto }
+                text: Sotto il letto c'è il pipistrello di peluche che hai già scoperto.
+              - text: Alla luce della zucca scopri un pipistrello di peluche che custodisce una chiave!
                 effects:
+                  - reveal: pipistrello_peluche
+                  - complete: peluche_scoperto
+              - text: È troppo buio per vedere qualcosa là sotto.
+      pipistrello_peluche:
+        name: Pipistrello di peluche
+        asset: object_pipistrello_peluche
+        description: 'Custodisce la chiave. Il cartellino dice: "Dolcetto o scherzetto? Con un dolcetto lascio il lucchetto!".'
+        hidden: true
+        actions:
+          offri_caramella:
+            description: Offrire la caramella finta al peluche.
+            outcomes:
+              - if: { completed: chiave_trovata }
+                text: Il pipistrello è sazio e ti ha già dato la chiave.
+              - if: { has: caramella_finta }
+                text: Il pipistrello abbraccia il dolcetto di stoffa e lascia cadere la chiave.
+                effects:
+                  - remove: caramella_finta
                   - give: chiave
                   - complete: chiave_trovata
-              - if: { completed: chiave_trovata }
-                text: Sotto il letto ora ci sono solo polvere e un calzino spaiato.
-              - text: È troppo buio per vedere qualcosa là sotto.
+              - text: Il peluche aspetta un dolcetto per giocattoli.
       porta:
         name: Porta
+        asset: object_porta_cameretta
         description: La porta della cameretta.
         states:
           chiusa: È chiusa a chiave.
@@ -98,47 +173,53 @@ rooms:
                   - complete: porta_aperta
               - text: La maniglia non si muove. Serve una chiave.
     ghosts:
-      lady_brina:
-        name: Lady Brina
-        description: Una dama evanescente con un lungo velo azzurro e una lanterna senza vetro.
+      conte_sbadiglio:
+        name: Conte Sbadiglio
+        asset: ghost_conte_sbadiglio
+        description: Un fantasma in vestaglia e berretto da notte, che fluttua abbracciato al cuscino.
         personality: >-
-          Governante gentile e un po' all'antica. Parla in modo cerimonioso, dà del voi
-          al bambino e si preoccupa che non si spaventi. Sa accendere le candele con un soffio.
+          Nobile gentile e sempre assonnato. Parla lentamente, dà del voi al bambino
+          e interrompe le frasi con sbadigli. Accende le candele con uno sbadiglio magico
+          che genera una fiamma azzurra innocua. Aiuta volentieri, poi vorrebbe tornare a dormire.
         knowledge:
           - text: Nel cassetto del comodino c'è un mozzicone di candela.
-          - text: Può accendere una candela con un soffio, se il bambino gliene porta una.
+          - text: La candela va inserita nella zucca sul comodino; lui può accenderla con uno sbadiglio magico.
           - if: { completed: candela_accesa }
-            text: Pip gioca sempre sotto il letto, forse ha visto qualcosa.
+            text: L'ombra del pipistrello indica di guardare sotto il letto.
         actions:
           chiedi_luce:
-            description: Chiedere a Lady Brina di accendere la candela.
+            description: Chiedere al Conte Sbadiglio di accendere la candela.
             outcomes:
               - if: { completed: candela_accesa }
                 text: '"La vostra candela brilla già, signorino."'
-              - if: { has: candela }
+              - if: { state: { zucca: candela_inserita } }
                 text: >-
-                  Lady Brina soffia piano sul mozzicone e si accende una fiammella
-                  azzurra che non scotta.
+                  Il Conte sbadiglia e una fiammella azzurra che non scotta accende la candela
+                  nella zucca. Sul pavimento, sotto il letto, appare l'ombra di un pipistrello.
                 effects:
+                  - set_state: { zucca: accesa }
                   - complete: candela_accesa
-              - text: '"Vi accenderei volentieri una candela, se solo ne aveste una."'
+              - text: '"Mettete una candela nella zucca, poi ci penserò io... dopo questo sbadiglio."'
       pip:
         name: Pip
+        asset: ghost_pip
         description: Un fantasmino dispettoso, piccolo come un cuscino, che fa le capriole a mezz'aria.
         personality: >-
           Bambino fantasma dispettoso e giocherellone. Risponde con indovinelli e prese in giro,
           ma in fondo vuole aiutare. Non ammette mai di aver combinato un guaio, al massimo
           lo lascia intuire.
         knowledge:
-          - text: Giocando ha fatto cadere la chiave della porta, ma non dice dove.
-          - if: { completed: candela_accesa }
-            text: La chiave è rotolata sotto il letto.
+          - text: Nel cestino ci sono dolcetti di stoffa per i giocattoli.
+          - if: { completed: peluche_scoperto }
+            text: Il pipistrello mangia solo dolci per giocattoli; quelli veri gli fanno male alle cuciture.
 
   salone:
     name: Salone
+    asset: room_salone
     description: >-
       Un salone enorme, con un pianoforte a coda, una libreria che arriva al soffitto
-      e un grande arazzo appeso alla parete di fondo.
+      e un grande arazzo appeso alla parete di fondo. Accanto allo specchio, un tavolino
+      espone tre ritratti del maggiordomo Ernesto.
     milestones:
       spartito_trovato:
         description: Hai trovato lo spartito della ninna nanna.
@@ -155,34 +236,113 @@ rooms:
     objects:
       libreria:
         name: Libreria
+        asset: object_libreria
         description: Scaffali pieni di libri polverosi e fogli sparsi.
         actions:
           cerca:
             description: Cercare tra libri e fogli.
             outcomes:
+              - text: Trovi solo libri polverosi. Nessuno spartito tra queste pagine.
+      specchio:
+        name: Specchio del salone
+        asset: object_specchio
+        description: Riflette il bambino e il salone, ma Ernesto non compare. I fantasmi non hanno riflesso!
+      tavolino:
+        name: Tavolino dei ritratti
+        asset: object_tavolino
+        description: Tre ritratti mostrano Ernesto con il papillon inclinato a sinistra, a destra o perfettamente dritto.
+        actions:
+          scegli_sinistra:
+            description: Prendere il ritratto con il papillon inclinato a sinistra.
+            outcomes:
               - if: { completed: spartito_trovato }
-                text: Solo libri noiosi, senza figure.
-              - text: Tra due libri di cucina trovi un foglio ingiallito. È uno spartito!
+                text: Ernesto ha già sistemato il papillon.
+              - text: Scegli il ritratto con il papillon inclinato a sinistra e rimetti gli altri sul tavolino.
                 effects:
-                  - give: spartito
-                  - complete: spartito_trovato
+                  - remove: ritratto_sinistra
+                  - remove: ritratto_destra
+                  - remove: ritratto_dritto
+                  - give: ritratto_sinistra
+          scegli_destra:
+            description: Prendere il ritratto con il papillon inclinato a destra.
+            outcomes:
+              - if: { completed: spartito_trovato }
+                text: Ernesto ha già sistemato il papillon.
+              - text: Scegli il ritratto con il papillon inclinato a destra e rimetti gli altri sul tavolino.
+                effects:
+                  - remove: ritratto_sinistra
+                  - remove: ritratto_destra
+                  - remove: ritratto_dritto
+                  - give: ritratto_destra
+          scegli_dritto:
+            description: Prendere il ritratto con il papillon dritto.
+            outcomes:
+              - if: { completed: spartito_trovato }
+                text: Ernesto ha già sistemato il papillon.
+              - text: Scegli il ritratto con il papillon dritto e rimetti gli altri sul tavolino.
+                effects:
+                  - remove: ritratto_sinistra
+                  - remove: ritratto_destra
+                  - remove: ritratto_dritto
+                  - give: ritratto_dritto
       pianoforte:
         name: Pianoforte
-        description: Un pianoforte a coda nero, con il leggio vuoto.
+        asset: object_pianoforte
+        description: Un pianoforte nero con tre tasti contrassegnati da zucca, fantasma e pipistrello.
+        states:
+          inizio: Nessuna sequenza in corso.
+          zucca_premuta: Hai suonato il primo simbolo, la zucca.
+          fantasma_premuto: Hai suonato zucca e fantasma.
+          completato: La ninna nanna ha svegliato la porta.
         actions:
-          suona:
+          premi_zucca:
+            description: Premere il tasto con la zucca.
             outcomes:
               - if: { completed: ninna_nanna_suonata }
-                text: Suoni di nuovo la ninna nanna e Ofelia canta, commossa.
-              - if: { has: spartito }
+                text: La porta è già sveglia. Ofelia sorride.
+              - if: { not: { has: spartito } }
+                text: Senza spartito non sai quale melodia suonare.
+              - if: { state: { pianoforte: inizio } }
+                text: Suoni la zucca. Ofelia annuisce.
+                effects:
+                  - set_state: { pianoforte: zucca_premuta }
+              - text: Nota sbagliata! La melodia ricomincia da capo.
+                effects:
+                  - set_state: { pianoforte: inizio }
+          premi_fantasma:
+            description: Premere il tasto con il fantasma.
+            outcomes:
+              - if: { completed: ninna_nanna_suonata }
+                text: La porta è già sveglia. Ofelia sorride.
+              - if: { not: { has: spartito } }
+                text: Senza spartito non sai quale melodia suonare.
+              - if: { state: { pianoforte: zucca_premuta } }
+                text: Suoni il fantasma. Ofelia comincia a cantare.
+                effects:
+                  - set_state: { pianoforte: fantasma_premuto }
+              - text: Nota sbagliata! La melodia ricomincia da capo.
+                effects:
+                  - set_state: { pianoforte: inizio }
+          premi_pipistrello:
+            description: Premere il tasto con il pipistrello.
+            outcomes:
+              - if: { completed: ninna_nanna_suonata }
+                text: La porta è già sveglia. Ofelia sorride.
+              - if: { not: { has: spartito } }
+                text: Senza spartito non sai quale melodia suonare.
+              - if: { state: { pianoforte: fantasma_premuto } }
                 text: >-
-                  Appoggi lo spartito sul leggio e suoni la ninna nanna. Ofelia canta con te
+                  Suoni il pipistrello e completi la ninna nanna. Ofelia canta con te
                   e dietro l'arazzo una serratura sbadiglia e si apre.
                 effects:
+                  - set_state: { pianoforte: completato }
                   - complete: ninna_nanna_suonata
-              - text: Pigi tasti a caso. Ofelia si tappa le orecchie.
+              - text: Nota sbagliata! La melodia ricomincia da capo.
+                effects:
+                  - set_state: { pianoforte: inizio }
       arazzo:
         name: Arazzo
+        asset: object_arazzo
         description: Un arazzo che raffigura un castello sotto la luna.
         actions:
           sposta:
@@ -194,15 +354,35 @@ rooms:
     ghosts:
       ernesto:
         name: Ernesto
-        description: Un maggiordomo fantasma impeccabile, con i guanti bianchi e il naso all'insù.
+        asset: ghost_ernesto
+        description: Un maggiordomo fantasma con i guanti bianchi, il naso all'insù e un grande papillon.
         personality: >-
           Maggiordomo formale e pignolo, un po' snob ma leale alla famiglia. Odia il disordine
           e sospira spesso. Parla per frasi brevi e corrette.
         knowledge:
-          - text: Gli spartiti di casa finiscono sempre nella libreria, in mezzo ai libri di cucina.
+          - if: { not: { completed: spartito_trovato } }
+            text: Ha il papillon storto e non ha riflesso. Chiede il ritratto con il papillon in ordine come modello e promette uno spartito in cambio.
+          - if: { not: { completed: spartito_trovato } }
+            text: Le due estremità del papillon devono stare alla stessa altezza. I tre ritratti sono sul tavolino.
           - text: La porta dietro l'arazzo porta alla camera dei padroni di casa.
+        actions:
+          consegna_ritratto:
+            description: Consegnare a Ernesto il ritratto scelto sul tavolino.
+            outcomes:
+              - if: { completed: spartito_trovato }
+                text: '"Il papillon è a posto e lo spartito è già vostro. Grazie!"'
+              - if: { has: ritratto_dritto }
+                text: Ernesto usa il ritratto come modello, sistema il papillon e ti consegna lo spartito dalla giacca.
+                effects:
+                  - remove: ritratto_dritto
+                  - give: spartito
+                  - complete: spartito_trovato
+              - if: { any: [{ has: ritratto_sinistra }, { has: ritratto_destra }] }
+                text: '"Ma qui è storto quanto il mio!" Ernesto ti restituisce il ritratto. Puoi sceglierne un altro.'
+              - text: '"Scegliete un ritratto sul tavolino e portatemelo, per cortesia."'
       ofelia:
         name: Ofelia
+        asset: ghost_ofelia
         description: Una cantante lirica fantasma, con un vestito di piume e la voce tremula.
         personality: >-
           Cantante lirica drammatica ed esagerata. Trasforma ogni frase in un piccolo
@@ -210,10 +390,11 @@ rooms:
         knowledge:
           - text: La porta dietro l'arazzo dorme e si sveglia solo sentendo la sua ninna nanna.
           - if: { completed: spartito_trovato }
-            text: Lo spartito va suonato al pianoforte, e lei canterà.
+            text: I simboli dello spartito vanno suonati da sinistra a destra sui tasti del pianoforte; lei canterà. Una nota sbagliata azzera la sequenza.
 
   camera_genitori:
     name: Camera dei genitori
+    asset: room_camera_genitori
     description: La camera di mamma e papà. Il lettone è caldo e sicuro.
     exits:
       salone:
@@ -221,6 +402,7 @@ rooms:
     ghosts:
       nonno_fosco:
         name: Nonno Fosco
+        asset: ghost_nonno_fosco
         description: Un vecchio fantasma con la barba lunga fino ai piedi, seduto su una poltrona a dondolo.
         personality: >-
           Bisnonno affettuoso e brontolone. Racconta storie lunghissime di quando era vivo
@@ -229,6 +411,7 @@ rooms:
           - text: Ha vegliato sulla famiglia per cent'anni ed è fiero del bambino.
       bisnonna_adelina:
         name: Bisnonna Adelina
+        asset: ghost_bisnonna_adelina
         description: Una fantasma minuta che sferruzza una sciarpa infinita.
         personality: >-
           Bisnonna dolce e pratica. Dà consigli su tutto e chiede sempre se il bambino ha

@@ -77,12 +77,14 @@ goal: camera_genitori     # entrarci fa vincere
 items:                    # oggetti che possono finire nell'inventario
   chiave:
     name: Chiave
+    asset: item_chiave    # opzionale: identificativo grafico
     description: ...
     actions: { ... }      # opzionale, come per gli oggetti
 
 rooms:
   cameretta:
     name: Cameretta
+    asset: room_cameretta
     description: ...
     milestones:           # DAG dei traguardi
       chiave_trovata:
@@ -96,6 +98,7 @@ rooms:
     objects:
       porta:
         name: Porta
+        asset: object_porta_cameretta
         description: ...
         states:           # opzionale; il primo è lo stato iniziale, il testo si aggiunge alla descrizione
           chiusa: È chiusa a chiave.
@@ -115,6 +118,7 @@ rooms:
     ghosts:
       pip:
         name: Pip
+        asset: ghost_pip
         description: ...
         personality: Istruzioni di personalità per il modello.
         voice: id-voce-elevenlabs    # opzionale
@@ -124,6 +128,22 @@ rooms:
             text: La chiave è sotto il letto.
         actions: { ... }             # come per gli oggetti
 ```
+
+### Asset grafici
+
+Il campo facoltativo `asset` identifica la risorsa grafica di una stanza (sfondo), un oggetto,
+un fantasma o un elemento dell'inventario. Deve rispettare il formato `[a-z][a-z0-9_]*`.
+Nel livello 1 i prefissi sono `room_`, `object_`, `ghost_` e `item_`.
+
+Sono identificativi logici, non percorsi o URL: il frontend li associa ai file effettivi.
+Il caricatore valida il formato, non l'esistenza dei file; lo stesso asset si puo' riutilizzare.
+Il campo non modifica le regole di gioco e non e' obbligatorio nei livelli esistenti.
+
+`look`, `examine` e `talk` restituiscono `asset` insieme ai dati degli elementi visibili.
+Anche i riferimenti in `changes` (stati, inventario, elementi rivelati/nascosti e stanza)
+lo includono quando presente. Gli elementi nascosti restano esclusi dalle viste fino alla scoperta.
+L'asset identifica l'elemento indipendentemente dal suo stato; eventuali varianti grafiche
+possono essere selezionate dal frontend usando anche `state` o i cambiamenti di stato.
 
 **Condizioni** (`if`). Più chiavi nella stessa mappa vanno tutte soddisfatte.
 
@@ -141,4 +161,13 @@ rooms:
 **Traguardi.** L'engine non completa mai un traguardo i cui prerequisiti non sono completati.
 Un esito che contiene `complete: X` viene quindi saltato finché i prerequisiti di `X` mancano,
 e vale l'esito successivo. Nel livello 1 succede con "guarda sotto il letto", che senza candela accesa
-dà "è troppo buio".
+dà "è troppo buio" invece di rivelare il peluche e completare `peluche_scoperto`.
+
+## Enigmi del livello 1
+
+1. **Cameretta:** prendere la candela dal comodino, inserirla nella zucca e chiedere luce al Conte Sbadiglio.
+2. **Cameretta:** guardare sotto il letto, trovare la caramella finta nel cestino e offrirla al pipistrello di peluche per ottenere la chiave. Aprire la porta e passare al salone.
+3. **Salone:** scegliere sul tavolino il ritratto con il papillon dritto e consegnarlo a Ernesto per ottenere lo spartito. I ritratti errati vengono restituiti e si può cambiare scelta.
+4. **Salone:** premere al pianoforte i tasti zucca, fantasma e pipistrello in questo ordine. Una nota errata azzera la sequenza senza penalità.
+
+Entrare nella camera dei genitori conclude la partita. Non c'è un quinto enigma.
