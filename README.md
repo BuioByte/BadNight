@@ -8,6 +8,7 @@ Serve Node.js LTS (`nvm use`) e pnpm tramite Corepack.
 
 ```sh
 corepack pnpm install
+cp .env.example .env    # poi inserisci le chiavi del provider AI (il file .env non va committato)
 corepack pnpm start     # avvia l'engine e stampa il link alla pagina web
 ```
 
