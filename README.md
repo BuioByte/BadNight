@@ -30,6 +30,8 @@ When `AGENT_PROVIDER=openai-compatible`, the harness uses `https://integrate.api
 
 ## Architettura
 
+Panoramica compatta, con diagrammi: [ARCHITECTURE.md](ARCHITECTURE.md).
+
 ### Engine
 
 Server locale in Node.js, avviato da linea di comando ([`packages/engine`](packages/engine/README.md)).
