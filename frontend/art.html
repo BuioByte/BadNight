@@ -1,0 +1,38 @@
+<!doctype html>
+<!-- Anteprima di tutte le illustrazioni e delle loro varianti di stato. Solo in sviluppo: npm run dev, poi /art.html
+     (/art.html?q=ghost mostra solo le chiavi che contengono "ghost"). -->
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BadNight · illustrazioni</title>
+  <style>
+    body { margin: 0; padding: 16px; background: #111; color: #ddd; font: 13px/1.4 ui-monospace, Consolas, monospace; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+    figure { margin: 0; }
+    canvas { width: 100%; image-rendering: pixelated; display: block; border: 1px solid #333; }
+    figcaption { margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <div class="grid" id="grid"></div>
+  <script type="module">
+    import { ASSETS, VARIANTS, drawIllustration } from '/src/art/drawings.js';
+    import { paint } from '/src/art/bitmap.js';
+
+    const grid = document.getElementById('grid');
+    const filter = new URLSearchParams(location.search).get('q') ?? '';
+    for (const asset of ASSETS.filter((a) => a.includes(filter))) {
+      for (const state of VARIANTS[asset] ?? [undefined]) {
+        const figure = document.createElement('figure');
+        const canvas = document.createElement('canvas');
+        const caption = document.createElement('figcaption');
+        paint(canvas, drawIllustration(asset, state));
+        caption.textContent = state ? `${asset} · ${state}` : asset;
+        figure.append(canvas, caption);
+        grid.append(figure);
+      }
+    }
+  </script>
+</body>
+</html>

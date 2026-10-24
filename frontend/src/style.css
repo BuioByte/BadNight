@@ -335,8 +335,38 @@ body.locked textarea:disabled {
   animation: flicker 3.2s infinite;
 }
 
-.art.stirring {
+.stirring .art,
+.stirring .art-picture {
   animation: flicker 0.35s infinite;
+}
+
+/* Illustrazione 1-bit (canvas) o PNG: intera nel riquadro, a pixel netti */
+.art-picture {
+  flex: 1;
+  width: 100%;
+  min-height: 240px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  background: #000;
+}
+
+.art[hidden],
+.art-picture[hidden] {
+  display: none;
+}
+
+.appearing {
+  animation: art-appear 0.7s ease-out;
+}
+
+.art-label {
+  margin: 0 0 4px;
+  color: var(--parchment);
+  font-style: italic;
+}
+
+.art-label:empty {
+  display: none;
 }
 
 .caption {
@@ -517,6 +547,11 @@ body.locked .status::after {
   50% { box-shadow: 0 0 22px rgb(232 176 75 / 0.32); }
 }
 
+@keyframes art-appear {
+  from { opacity: 0; filter: blur(2px); }
+  to { opacity: 1; filter: none; }
+}
+
 @keyframes appear {
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: none; }
@@ -558,6 +593,11 @@ body.locked .status::after {
   .art {
     min-height: 180px;
     font-size: clamp(10px, 3vw, 16px);
+  }
+
+  .art-picture {
+    min-height: 0;
+    max-height: 50vh;
   }
 
   .story-log {

@@ -39,6 +39,10 @@ l'engine è partito su un'altra porta.
 | `src/turn.js` | blocco dell'input |
 | `src/story.js` | racconto: intro, testo del giocatore, risposte, errori, outro |
 | `src/room.js` | stanza, progresso (una candela per stanza), uscite, traguardi |
+| `src/illustration.js` | sceglie e mostra l'illustrazione più pertinente |
+| `src/art/` | disegni 1-bit per chiave `asset` e primitive di disegno |
+| `public/illustrations/` | PNG facoltativi che sostituiscono i disegni |
+| `art.html` | anteprima di tutti i disegni (solo in sviluppo) |
 | `src/style.css` | tema gotico |
 | `src/sound.js` | musica, suoni dei tasti e volumi del mixer |
 
@@ -56,7 +60,33 @@ Il giocatore non può andare avanti finché l'engine non ha risposto:
 
 ## Illustrazioni
 
-Le illustrazioni ASCII le genererà il backend e le invierà sul WebSocket. Il protocollo non le prevede
-ancora, quindi per ora il riquadro mostra una zucca ASCII statica (`#art` in `index.html`). Quando il
-messaggio esisterà, basterà aggiungere un caso in `src/main.js` che scrive il testo in `#art`, con
-`textContent`.
+Il riquadro a sinistra mostra un'illustrazione statica, in bianco e nero a 1 bit, scelta dalla chiave
+`asset` che stanze, oggetti e fantasmi hanno nel livello (vedi il
+[README di level](../packages/level/README.md#asset-grafici)). L'engine non va toccato: le chiavi arrivano
+già nei messaggi `state` e `tool`.
+
+**Quale immagine.** La più pertinente all'ultima risposta del server (`src/illustration.js`):
+
+| Tool | Immagine |
+| --- | --- |
+| `look` | la stanza |
+| `examine` | l'oggetto o il fantasma esaminato |
+| `talk` | il fantasma |
+| `act` | l'oggetto appena scoperto, se c'è; altrimenti l'oggetto usato |
+| `move` | la nuova stanza (se la porta è chiusa l'immagine non cambia) |
+
+I tool falliti non cambiano l'immagine. A ogni `state` la scelta si ricostruisce dalla `history`, quindi dopo
+un ricaricamento o un reset si vede la stessa immagine. Gli oggetti con stati diversi (comodino aperto, zucca
+accesa, porta aperta, cestino vuoto, pianoforte, tavolino) hanno una variante per stato.
+
+**Da dove viene.** Per ogni chiave si usa, in ordine:
+
+1. un PNG in `public/illustrations/`: `<asset>-<stato>.png` (solo per quello stato) o `<asset>.png`;
+2. il disegno generato dal codice in `src/art/drawings.js` (128×128, primitive e retinatura in `src/art/bitmap.js`);
+3. la zucca ASCII, se la chiave manca o non ha né PNG né disegno (per esempio un livello senza chiavi `asset`).
+
+I PNG servono a sostituire i disegni del codice con immagini fatte a mano o con un generatore. Formato
+consigliato: quadrato, bianco e nero, 128×128 o 256×256. La pagina li ingrandisce a pixel netti.
+
+Con `npm run dev`, la pagina [`/art.html`](art.html) mostra tutti i disegni con le loro varianti di stato
+(`/art.html?q=ghost` filtra per chiave).

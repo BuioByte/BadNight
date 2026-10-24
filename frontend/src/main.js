@@ -4,6 +4,7 @@ import { connect } from './socket.js';
 import { createTurn } from './turn.js';
 import { createStory } from './story.js';
 import { createRoom } from './room.js';
+import { createIllustration } from './illustration.js';
 import { playNarrationSound, playTypingSound, setAudioEnabled, setVolume } from './sound.js';
 
 const $ = (id) => document.getElementById(id);
@@ -25,6 +26,12 @@ const room = createRoom({
   progress: $('progress'),
   exits: $('exits'),
   milestones: $('milestones'),
+});
+const illustration = createIllustration({
+  canvas: $('art-canvas'),
+  image: $('art-image'),
+  fallback: art,
+  label: $('art-label'),
 });
 
 function updateAudioControls(enabled) {
@@ -85,12 +92,13 @@ for (const channel of ['master', 'music', 'typing', 'narration']) {
   });
 }
 
-// Fa tremare la candela dell'illustrazione mentre l'agente usa i tool.
+// Fa tremare l'illustrazione mentre l'agente usa i tool.
+const artFrame = art.closest('.illustration');
 let stirTimer;
 function stir() {
-  art.classList.add('stirring');
+  artFrame.classList.add('stirring');
   clearTimeout(stirTimer);
-  stirTimer = setTimeout(() => art.classList.remove('stirring'), 900);
+  stirTimer = setTimeout(() => artFrame.classList.remove('stirring'), 900);
 }
 
 let engineReady = false;
@@ -99,6 +107,7 @@ const socket = connect(
   {
     state(msg) {
       room.render(msg);
+      illustration.state(msg);
       story.sync(msg);
       turn.setWon(msg.won);
       if (msg.busy) turn.lock();
@@ -116,6 +125,7 @@ const socket = connect(
     },
     tool(msg) {
       stir();
+      illustration.tool(msg);
       story.add(msg); // non compare nel racconto, ma conta tra i messaggi della history già mostrati
     },
     error(msg) {
