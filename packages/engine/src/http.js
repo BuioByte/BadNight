@@ -1,14 +1,10 @@
-// Server HTTP: la pagina web (file statici) e l'API REST per il frontend, senza autenticazione.
-//
-//   GET  /api/state[?since=n]  vista della partita + eventi con seq > n
-//   POST /api/tools/:name      chiama un tool, body JSON con gli argomenti
-//   POST /api/reset            nuova partita
+// Server HTTP: la pagina web (file statici) e il WebSocket per il frontend su /ws.
 
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { extname, join, normalize, sep } from 'node:path';
+import { attachWebSocket } from './ws.js';
 
-const MAX_BODY = 64 * 1024;
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
@@ -24,84 +20,41 @@ const TYPES = {
   '.ico': 'image/x-icon',
 };
 
-class HttpError extends Error {
-  constructor(status, message) {
-    super(message);
-    this.status = status;
-  }
-}
-
 export function createHttpServer(engine, { publicDir }) {
-  return createServer(async (req, res) => {
+  const server = createServer(async (req, res) => {
     try {
-      const url = new URL(req.url, 'http://localhost');
-      if (url.pathname.startsWith('/api/')) await api(engine, req, res, url);
-      else await serveStatic(publicDir, req, res, url);
+      await serveStatic(publicDir, req, res);
     } catch (e) {
-      const status = e instanceof HttpError ? e.status : 500;
-      if (status === 500) console.error(e);
-      if (!res.headersSent) json(res, status, { ok: false, error: status === 500 ? 'Errore interno.' : e.message });
+      console.error(e);
+      if (!res.headersSent) text(res, 500, 'Errore interno.');
       else res.end();
     }
   });
+  attachWebSocket(server, engine);
+  return server;
 }
 
-async function api(engine, req, res, url) {
-  const route = `${req.method} ${url.pathname}`;
-  if (route === 'GET /api/state') {
-    const since = Number(url.searchParams.get('since') ?? 0);
-    if (!Number.isInteger(since) || since < 0) throw new HttpError(400, '"since" deve essere un intero >= 0.');
-    return json(res, 200, engine.snapshot({ since }));
-  }
-  if (route === 'POST /api/reset') {
-    engine.reset();
-    return json(res, 200, engine.snapshot());
-  }
-  const tool = url.pathname.match(/^\/api\/tools\/([a-z_]+)$/);
-  if (tool && req.method === 'POST') {
-    const result = engine.call(tool[1], await readJson(req), 'http');
-    return json(res, 200, result);
-  }
-  throw new HttpError(404, `Endpoint sconosciuto: ${route}.`);
-}
-
-async function readJson(req) {
-  let body = '';
-  for await (const chunk of req) {
-    body += chunk;
-    if (body.length > MAX_BODY) throw new HttpError(413, 'Body troppo grande.');
-  }
-  if (!body.trim()) return {};
-  try {
-    const v = JSON.parse(body);
-    if (v === null || typeof v !== 'object' || Array.isArray(v)) throw new Error();
-    return v;
-  } catch {
-    throw new HttpError(400, 'Il body deve essere un oggetto JSON.');
-  }
-}
-
-async function serveStatic(publicDir, req, res, url) {
-  if (req.method !== 'GET' && req.method !== 'HEAD') throw new HttpError(405, 'Metodo non ammesso.');
+async function serveStatic(publicDir, req, res) {
+  if (req.method !== 'GET' && req.method !== 'HEAD') return text(res, 405, 'Metodo non ammesso.');
   let rel;
   try {
-    rel = decodeURIComponent(url.pathname).replace(/\/$/, '/index.html');
+    rel = decodeURIComponent(new URL(req.url, 'http://localhost').pathname).replace(/\/$/, '/index.html');
   } catch {
-    throw new HttpError(400, 'Percorso non valido.');
+    return text(res, 400, 'Percorso non valido.');
   }
   const file = normalize(join(publicDir, rel));
-  if (!file.startsWith(publicDir + sep)) throw new HttpError(404, 'Non trovato.');
+  if (!file.startsWith(publicDir + sep)) return text(res, 404, 'Non trovato.');
   let data;
   try {
     data = await readFile(file);
   } catch {
-    throw new HttpError(404, 'Non trovato.');
+    return text(res, 404, 'Non trovato.');
   }
   res.writeHead(200, { 'content-type': TYPES[extname(file)] ?? 'application/octet-stream' });
   res.end(req.method === 'HEAD' ? undefined : data);
 }
 
-function json(res, status, body) {
-  res.writeHead(status, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' });
-  res.end(JSON.stringify(body));
+function text(res, status, body) {
+  res.writeHead(status, { 'content-type': 'text/plain; charset=utf-8' });
+  res.end(body);
 }

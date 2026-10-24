@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Pagina provvisoria, finché non c'è il frontend: mostra lo stato e permette di chiamare i tool a mano. -->
+<!-- Pagina provvisoria, finché non c'è il frontend: client minimo del WebSocket dell'engine. -->
 <html lang="it">
 <head>
   <meta charset="utf-8">
@@ -10,51 +10,69 @@
     h1 { color: #f90; }
     pre { background: #1c1c1c; padding: 12px; overflow-x: auto; white-space: pre-wrap; }
     input, button { font: inherit; padding: 4px 8px; }
+    .input { color: #f90; } .output { color: #fff; } .tool { color: #888; } .error { color: #f66; }
   </style>
 </head>
 <body>
   <h1 id="title">BadNight</h1>
   <p id="intro"></p>
-  <form id="call">
-    <input id="cmd" placeholder="look | examine letto | act letto guarda_sotto | move salone | talk pip" size="50" autofocus>
-    <button>Invia</button>
-    <button type="button" id="reset">Nuova partita</button>
+  <form id="form">
+    <input id="text" placeholder="Cosa fai?" size="50" disabled>
+    <button id="send" disabled>Invia</button>
+    <button type="button" id="reset" disabled>Nuova partita</button>
   </form>
+  <pre id="log"></pre>
   <h2>Stanza</h2>
   <pre id="view"></pre>
-  <h2>Eventi</h2>
-  <pre id="events"></pre>
   <script>
-    const params = { examine: ['target'], act: ['target', 'action'], move: ['to'], talk: ['ghost'] };
     const $ = (id) => document.getElementById(id);
-    let run = 0, seq = 0;
+    let ws;
 
-    // Polling: legge solo gli eventi nuovi (anche quelli generati dall'agente).
-    async function refresh() {
-      const s = await (await fetch(`/api/state?since=${seq}`)).json();
-      if (s.run !== run) { run = s.run; seq = 0; $('events').textContent = ''; return refresh(); }
-      $('title').textContent = s.level.title;
-      $('intro').textContent = s.won ? s.level.outro : s.level.intro;
-      $('view').textContent = JSON.stringify({ ...s.view, completed: s.completed }, null, 2);
-      for (const e of s.events) {
-        $('events').textContent = `#${e.seq} [${e.source}] ${e.tool} ${JSON.stringify(e.args)}\n${JSON.stringify(e.result, null, 2)}\n\n` + $('events').textContent;
-      }
-      seq = s.seq;
+    function setReady(ready) {
+      for (const id of ['text', 'send', 'reset']) $(id).disabled = !ready;
+      if (ready) $('text').focus();
     }
 
-    $('call').onsubmit = async (ev) => {
-      ev.preventDefault();
-      const [tool, ...rest] = $('cmd').value.trim().split(/\s+/);
-      if (!tool) return;
-      const args = Object.fromEntries((params[tool] ?? []).map((p, i) => [p, rest[i]]));
-      await fetch(`/api/tools/${tool}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(args) });
-      $('cmd').value = '';
-      refresh();
-    };
-    $('reset').onclick = async () => { await fetch('/api/reset', { method: 'POST' }); refresh(); };
+    function show(m) {
+      const line = document.createElement('div');
+      line.className = m.type;
+      line.textContent =
+        m.type === 'input' ? `> ${m.text}` :
+        m.type === 'output' ? m.text :
+        m.type === 'tool' ? `  [${m.tool} ${JSON.stringify(m.args)}] ${JSON.stringify(m.result.changes ?? {})}` :
+        `Errore: ${m.error}`;
+      $('log').append(line);
+      line.scrollIntoView();
+    }
 
-    refresh();
-    setInterval(refresh, 1000);
+    function connect() {
+      ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws`);
+      ws.onmessage = (ev) => {
+        const m = JSON.parse(ev.data);
+        if (m.type === 'ready') return setReady(true);
+        if (m.type === 'state') {
+          $('title').textContent = m.level.title;
+          $('intro').textContent = m.won ? m.level.outro : m.level.intro;
+          $('view').textContent = JSON.stringify({ ...m.view, completed: m.completed }, null, 2);
+          $('log').textContent = '';
+          return m.history.forEach(show);
+        }
+        show(m);
+      };
+      ws.onclose = () => { setReady(false); setTimeout(connect, 1000); };
+    }
+
+    $('form').onsubmit = (ev) => {
+      ev.preventDefault();
+      const text = $('text').value.trim();
+      if (!text) return;
+      ws.send(JSON.stringify({ type: 'input', text }));
+      $('text').value = '';
+      setReady(false); // fino al prossimo "ready"
+    };
+    $('reset').onclick = () => ws.send(JSON.stringify({ type: 'reset' }));
+
+    connect();
   </script>
 </body>
 </html>

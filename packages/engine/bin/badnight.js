@@ -1,11 +1,11 @@
 #!/usr/bin/env node
-// Avvia l'engine: carica il livello, serve la pagina web e l'API, stampa il link.
+// Avvia l'engine: carica il livello, serve la pagina web e il WebSocket, stampa il link.
 // Uso: badnight [--level file.yaml] [--port 3000] [--host 127.0.0.1]
 
 import { parseArgs } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import { LevelError, loadLevelFile } from '@badnight/level';
-import { createEngine, createHttpServer } from '../src/index.js';
+import { createEngine, createHttpServer, devAgent } from '../src/index.js';
 
 const PORT_ATTEMPTS = 10;
 
@@ -31,7 +31,8 @@ try {
   process.exit(1);
 }
 
-const engine = createEngine(level);
+// Finché l'agente AI non è collegato, risponde l'agente di sviluppo (comandi testuali).
+const engine = createEngine(level, { agent: devAgent });
 const server = createHttpServer(engine, { publicDir: fileURLToPath(new URL('../public', import.meta.url)) });
 
 // Se la porta è occupata prova le successive.
