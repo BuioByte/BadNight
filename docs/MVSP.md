@@ -6,7 +6,7 @@ This is the security baseline for the local hackfest prototype, informed by the 
 
 - **Secrets:** Keep `GEMINI_API_KEY`, `NVIDIA_API_KEY`, and compatible-provider keys passed through server-side agent options in the backend process or ignored root `.env`; never place them in Vite variables, browser code, logs, or commits. Revoke any key disclosed in chat or source control.
 - **Provider configuration:** The harness reads `AGENT_PROVIDER`, `NVIDIA_BASE_URL`, and `NVIDIA_MODEL` for environment-based NVIDIA setup. Configure other compatible providers through server-side `openAICompatible` options so endpoint and credential selection stays explicit.
-- **Input validation:** Validate API request bodies against the shared JSON Schemas before using player input or game session identifiers.
+- **Input validation:** Validate WebSocket messages from the browser before using player input: JSON only, known `type`, non-empty `text`, at most 64 KiB per message, one turn at a time.
 - **Least privilege:** Expose only the registered game tools to the agent. Validate tool names and arguments in the harness and keep game rules authoritative in the level engine.
 - **Transport and exposure:** Bind the development API to loopback by default. Do not expose the API or API key to an untrusted network.
 - **Data minimization:** Keep session state in memory for the local prototype. Do not persist player input or model conversations to disk.
@@ -25,9 +25,9 @@ This is the security baseline for the local hackfest prototype, informed by the 
 
 The harness treats provider output as untrusted, validates tool names and arguments, and retries empty model responses once with a corrective prompt. It fails with a typed error if the retry is also empty. This change adds no data storage, credentials, or network endpoint.
 
-## Browser soundtrack
+## Browser audio
 
-- **User control:** Background music and typing sounds are opt-in through the visible audio button, which also stops playback.
-- **Data and permissions:** Audio is synthesized into local static assets. No audio is recorded, uploaded, or fetched from an external service; no new permission or API boundary is introduced.
-- **Input validation:** Typing sounds are triggered by ordinary character key events and use fixed local assets; player text is not read by the sound system.
+- **User control:** Music and typing sounds are opt-in through the browser mixer, which has separate master, music, and key sound levels.
+- **Data and permissions:** Audio uses local static assets. No audio is recorded, uploaded, or fetched from an external service; no new permission or API boundary is introduced.
+- **Input validation:** Typing sounds respond to ordinary character key events and use fixed local assets; typed text is not read or transmitted by the sound system.
 - **Secrets and least privilege:** Not applicable; the feature uses no credentials, network access, or external service.

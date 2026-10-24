@@ -83,6 +83,7 @@ body::after {
 /* ---------- Header ---------- */
 
 .top {
+  z-index: 3;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -123,6 +124,61 @@ body::after {
   align-items: flex-end;
   height: 28px;
 }
+
+.mixer {
+  position: relative;
+  z-index: 3;
+}
+
+.mixer summary {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 38px;
+  border: 1px solid var(--bruise-2);
+  border-radius: var(--radius);
+  color: var(--parchment-dim);
+  cursor: pointer;
+  list-style: none;
+}
+
+.mixer summary::-webkit-details-marker { display: none; }
+.mixer summary:hover, .mixer[open] summary { border-color: var(--candle); color: var(--candle); }
+
+.mixer-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  display: grid;
+  gap: 14px;
+  width: min(260px, calc(100vw - 32px));
+  padding: 16px;
+  border: 1px solid var(--bruise-2);
+  border-radius: var(--radius);
+  background: var(--night-2);
+  box-shadow: 0 8px 30px rgb(0 0 0 / 0.55);
+}
+
+.mixer-panel button {
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
+.mixer-panel button[aria-pressed="true"] {
+  border-color: var(--candle);
+  color: var(--candle);
+}
+
+.mixer-channel {
+  display: grid;
+  gap: 5px;
+  color: var(--parchment-dim);
+  font-size: 14px;
+}
+
+.mixer-channel span { display: flex; justify-content: space-between; }
+.mixer-channel output { color: var(--parchment); font-variant-numeric: tabular-nums; }
+.mixer-channel input { width: 100%; accent-color: var(--candle); }
 
 .candle {
   position: relative;
@@ -166,7 +222,8 @@ button:hover:not(:disabled) {
 }
 
 button:focus-visible,
-textarea:focus-visible {
+textarea:focus-visible,
+.mixer summary:focus-visible {
   outline: 2px solid var(--candle);
   outline-offset: 2px;
 }

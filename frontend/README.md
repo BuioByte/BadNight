@@ -40,6 +40,9 @@ l'engine è partito su un'altra porta.
 | `src/story.js` | racconto: intro, testo del giocatore, risposte, errori, outro |
 | `src/room.js` | stanza, progresso (una candela per stanza), uscite, traguardi |
 | `src/style.css` | tema gotico |
+| `src/sound.js` | musica, suoni dei tasti e volumi del mixer |
+
+Il mixer nell'intestazione attiva l'audio e regola separatamente volume master, musica e tasti. Le tracce WAV sono locali e si rigenerano dalla radice del repository con `python3 frontend/scripts/render_soundtrack.py`.
 
 ## Si aspetta sempre la risposta
 

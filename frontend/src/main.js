@@ -4,6 +4,7 @@ import { connect } from './socket.js';
 import { createTurn } from './turn.js';
 import { createStory } from './story.js';
 import { createRoom } from './room.js';
+import { playTypingSound, setAudioEnabled, setVolume } from './sound.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -11,6 +12,7 @@ const form = $('prompt');
 const text = $('text');
 const resetButton = $('reset');
 const art = $('art');
+const audioToggle = $('audio-toggle');
 
 const turn = createTurn({ text, send: $('send'), reset: resetButton, status: $('status') });
 const story = createStory($('story'));
@@ -21,6 +23,22 @@ const room = createRoom({
   exits: $('exits'),
   milestones: $('milestones'),
 });
+
+audioToggle.addEventListener('click', async () => {
+  const enabled = await setAudioEnabled(audioToggle.getAttribute('aria-pressed') !== 'true');
+  audioToggle.setAttribute('aria-pressed', String(enabled));
+  audioToggle.textContent = enabled ? 'Audio attivo' : 'Attiva audio';
+});
+
+for (const channel of ['master', 'music', 'typing']) {
+  const slider = $(`volume-${channel}`);
+  const output = $(`volume-${channel}-value`);
+  slider.addEventListener('input', () => {
+    const volume = Number(slider.value) / 100;
+    output.value = `${slider.value}%`;
+    setVolume(channel, volume);
+  });
+}
 
 // Fa tremare la candela dell'illustrazione mentre l'agente usa i tool.
 let stirTimer;
@@ -92,6 +110,7 @@ form.addEventListener('submit', (ev) => {
 
 // Enter invia, Shift+Enter va a capo.
 text.addEventListener('keydown', (ev) => {
+  if (!ev.ctrlKey && !ev.metaKey && !ev.altKey && !ev.isComposing && ev.key.length === 1) playTypingSound();
   if (ev.key === 'Enter' && !ev.shiftKey && !ev.isComposing) {
     ev.preventDefault();
     submit();

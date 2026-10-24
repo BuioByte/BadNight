@@ -19,6 +19,24 @@
       <span id="room-name" class="room-name"></span>
     </div>
     <div id="progress" class="progress"></div>
+    <details class="mixer">
+      <summary aria-label="Apri il mixer audio" title="Mixer audio"><span aria-hidden="true">♫</span></summary>
+      <div class="mixer-panel" role="group" aria-label="Volume audio">
+        <button type="button" id="audio-toggle" aria-pressed="false">Attiva audio</button>
+        <label class="mixer-channel" for="volume-master">
+          <span>Master <output id="volume-master-value">100%</output></span>
+          <input id="volume-master" type="range" min="0" max="100" value="100">
+        </label>
+        <label class="mixer-channel" for="volume-music">
+          <span>Musica <output id="volume-music-value">20%</output></span>
+          <input id="volume-music" type="range" min="0" max="100" value="20">
+        </label>
+        <label class="mixer-channel" for="volume-typing">
+          <span>Tasti <output id="volume-typing-value">16%</output></span>
+          <input id="volume-typing" type="range" min="0" max="100" value="16">
+        </label>
+      </div>
+    </details>
     <button type="button" id="reset" class="reset" disabled>Nuova notte</button>
   </header>
 
