@@ -16,7 +16,7 @@
     "node": ">=22"
   },
   "dependencies": {
-    "@badnight/level": "0.1.0",
+    "@badnight/level": "workspace:*",
     "ws": "^8.22.0"
   }
 }

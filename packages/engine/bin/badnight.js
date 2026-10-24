@@ -9,7 +9,12 @@ import { createEngine, createHttpServer, devAgent } from '../src/index.js';
 
 const PORT_ATTEMPTS = 10;
 
+// `pnpm start -- --port 3100` passa anche il `--`: lo ignoriamo.
+const args = process.argv.slice(2);
+if (args[0] === '--') args.shift();
+
 const { values: opts } = parseArgs({
+  args,
   options: {
     level: { type: 'string', default: fileURLToPath(new URL('../levels/level-0.yaml', import.meta.resolve('@badnight/level'))) },
     port: { type: 'string', default: '3000' },
