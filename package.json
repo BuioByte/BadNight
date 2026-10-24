@@ -4,8 +4,9 @@
   "packageManager": "pnpm@12.15.0",
   "engines": { "node": ">=22" },
   "scripts": {
-    "build": "pnpm --filter @badnight/agent-harness build && pnpm --filter @badnight/webui build",
-    "test": "pnpm --filter @badnight/level test && pnpm --filter @badnight/agent-harness test && pnpm --filter @badnight/webui typecheck",
+    "start": "pnpm --filter @badnight/engine start",
+    "build": "pnpm --filter @badnight/agent-harness build",
+    "test": "pnpm --filter @badnight/level test && pnpm --filter @badnight/engine test && pnpm --filter @badnight/agent-harness test",
     "test:live": "pnpm --filter @badnight/agent-harness test:live",
     "test:live:nim": "pnpm --filter @badnight/agent-harness test:live:nim"
   }

@@ -5,6 +5,8 @@ import { readFile } from 'node:fs/promises';
 import { extname, join, normalize, sep } from 'node:path';
 import { attachWebSocket } from './ws.js';
 
+const WS_CLOSE_GRACE = 1000;
+
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
@@ -30,7 +32,19 @@ export function createHttpServer(engine, { publicDir }) {
       else res.end();
     }
   });
-  attachWebSocket(server, engine);
+  const wss = attachWebSocket(server, engine);
+
+  // server.close() aspetta che tutte le connessioni siano chiuse, ma un WebSocket aperto
+  // (la pagina nel browser) non si chiude da solo: shutdown() chiude prima i WebSocket,
+  // in modo ordinato e poi forzato, e si risolve quando il server è chiuso.
+  server.shutdown = () =>
+    new Promise((resolve) => {
+      server.close(() => resolve());
+      for (const ws of wss.clients) ws.close(1001, 'Engine in chiusura');
+      server.closeAllConnections();
+      setTimeout(() => wss.clients.forEach((ws) => ws.terminate()), WS_CLOSE_GRACE).unref();
+    });
+
   return server;
 }
 
