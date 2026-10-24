@@ -7,7 +7,7 @@ import { loadLevelFile } from '@badnight/level';
 import { createEngine, createHttpServer, devAgent } from '../src/index.js';
 
 const level = await loadLevelFile(
-  fileURLToPath(new URL('../test/fixtures/level-test.yaml', import.meta.resolve('@badnight/level'))),
+  fileURLToPath(new URL('../levels/level-0.yaml', import.meta.resolve('@badnight/level'))),
 );
 
 // Raccoglie i messaggi emessi dall'engine.
@@ -100,7 +100,7 @@ test('WebSocket', async (t) => {
 
   let got = await until('ready');
   assert.deepEqual(got.map((m) => m.type), ['state', 'ready']);
-  assert.equal(got[0].level.title, 'La prima notte');
+  assert.equal(got[0].level.title, 'La notte di prova');
 
   ws.send(JSON.stringify({ type: 'input', text: 'move salone' }));
   got = await until('ready');

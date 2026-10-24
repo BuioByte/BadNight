@@ -8,12 +8,12 @@ Regole e stato della partita sono nel package [`level`](../level/README.md).
 
 ```sh
 npm install          # dalla radice del repo (npm workspaces)
-npm start            # = badnight, livello 1 su http://127.0.0.1:3000
+npm start            # = badnight, livello 0 su http://127.0.0.1:3000
 npm test
 ```
 
 ```
-badnight [--level file.yaml] [--port 3000] [--host 127.0.0.1]
+badnight [--level file.yaml] [--port 3000] [--host 127.0.0.1]   # default: packages/level/levels/level-0.yaml
 ```
 
 Se la porta è occupata l'engine prova le successive.

@@ -7,7 +7,7 @@ import { argv, stdin, stdout } from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { createGame, loadLevelFile } from '../src/index.js';
 
-const file = argv[2] ?? fileURLToPath(new URL('../levels/level-1.yaml', import.meta.url));
+const file = argv[2] ?? fileURLToPath(new URL('../levels/level-0.yaml', import.meta.url));
 const game = createGame(await loadLevelFile(file));
 
 const params = { examine: ['target'], act: ['target', 'action'], move: ['to'], talk: ['ghost'] };

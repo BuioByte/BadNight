@@ -1,8 +1,8 @@
-# Livello usato dai test: copia del livello 1 senza inventario, indipendente dai cambiamenti a levels/.
-# Formato descritto in packages/level/README.md.
+# Livello 0: livello di prova (stesse stanze ed enigmi del livello 1, senza inventario).
+# È il livello di default dell'engine e quello usato dai test. Formato descritto in packages/level/README.md.
 
-id: livello_1
-title: La prima notte
+id: livello_0
+title: La notte di prova
 intro: >-
   Ti svegli di soprassalto. La cameretta è buia, la casa scricchiola
   e la camera di mamma e papà sembra lontanissima.

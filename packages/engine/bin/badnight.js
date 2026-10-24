@@ -11,7 +11,7 @@ const PORT_ATTEMPTS = 10;
 
 const { values: opts } = parseArgs({
   options: {
-    level: { type: 'string', default: fileURLToPath(new URL('../levels/level-1.yaml', import.meta.resolve('@badnight/level'))) },
+    level: { type: 'string', default: fileURLToPath(new URL('../levels/level-0.yaml', import.meta.resolve('@badnight/level'))) },
     port: { type: 'string', default: '3000' },
     host: { type: 'string', default: '127.0.0.1' },
     help: { type: 'boolean', short: 'h' },

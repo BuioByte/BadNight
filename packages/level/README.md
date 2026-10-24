@@ -13,7 +13,7 @@ che importa questo modulo.
 cd packages/level
 npm install
 npm test        # test
-npm run play    # gioca il livello 1 dal terminale, chiamando i tool a mano
+npm run play    # gioca il livello 0 dal terminale, chiamando i tool a mano
 ```
 
 ## Uso dall'engine
@@ -21,7 +21,7 @@ npm run play    # gioca il livello 1 dal terminale, chiamando i tool a mano
 ```js
 import { loadLevelFile, createGame, toolDefinitions } from '@badnight/level';
 
-const level = await loadLevelFile('levels/level-1.yaml'); // lancia LevelError (con .errors) se non è valido
+const level = await loadLevelFile('levels/level-0.yaml'); // lancia LevelError (con .errors) se non è valido
 const game = createGame(level);                           // oppure createGame(level, { state: salvato })
 
 // toolDefinitions: [{ name, description, parameters }] da passare al modello come function declarations.
@@ -62,7 +62,7 @@ e solo le informazioni (`knowledge`) sbloccate dallo stato attuale.
 
 ## Formato del livello
 
-Esempio completo: [levels/level-1.yaml](levels/level-1.yaml). Gli id sono in minuscolo con `_`.
+Esempio completo: [levels/level-0.yaml](levels/level-0.yaml). Gli id sono in minuscolo con `_`.
 Gli id di oggetti e fantasmi sono unici in tutto il livello, e lo stesso vale per i traguardi.
 Non c'è inventario: gli oggetti restano nella loro stanza. Un oggetto da trovare si dichiara `hidden: true`
 e compare con l'effetto `reveal`.
@@ -133,5 +133,5 @@ rooms:
 
 **Traguardi.** L'engine non completa mai un traguardo i cui prerequisiti non sono completati.
 Un esito che contiene `complete: X` viene quindi saltato finché i prerequisiti di `X` mancano,
-e vale l'esito successivo. Nel livello 1 succede con "guarda sotto il letto", che senza candela accesa
+e vale l'esito successivo. Nel livello 0 succede con "guarda sotto il letto", che senza candela accesa
 dà "è troppo buio".
