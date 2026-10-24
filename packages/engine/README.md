@@ -8,16 +8,23 @@ Regole e stato della partita sono nel package [`level`](../level/README.md).
 
 ```sh
 corepack pnpm install    # dalla radice del repo (workspace pnpm)
-corepack pnpm start      # = badnight, livello 0 su http://127.0.0.1:3000
+corepack pnpm start      # = badnight, livello 1 su http://127.0.0.1:3000
 corepack pnpm start -- --port 3100
 corepack pnpm --filter @badnight/engine test
 ```
 
 ```
-badnight [--level file.yaml] [--port 3000] [--host 127.0.0.1]   # default: packages/level/levels/level-0.yaml
+badnight [--level file.yaml] [--port 3000] [--host 127.0.0.1] [--agent ai|dev]
 ```
 
-Se la porta è occupata l'engine prova le successive.
+- `--level`: default `packages/level/levels/level-1.yaml`. I test dell'engine usano il livello di prova `level-0.yaml`.
+- `--agent ai`: risponde l'agente AI del harness. Le chiavi si leggono dall'ambiente o dal file `.env`
+  nella radice del repo (vedi il README principale). `--agent dev`: l'agente di sviluppo a comandi testuali.
+  Senza `--agent`: `ai` se è impostato `GEMINI_API_KEY` o `AGENT_PROVIDER`, altrimenti `dev`.
+  La console mostra quale agente è attivo.
+- Se la porta è occupata l'engine prova le successive.
+
+`start` e `test` compilano prima il harness (TypeScript).
 
 ## Struttura
 
@@ -26,7 +33,8 @@ Se la porta è occupata l'engine prova le successive.
 | `bin/badnight.js` | CLI: argomenti, caricamento del livello, avvio del server, link in console |
 | `src/engine.js` | `Engine`: l'unica partita, i turni, la cronologia, i messaggi per il frontend |
 | `src/tools.js` | `createTools(engine)`: i tool per l'agente AI come funzioni |
-| `src/dev-agent.js` | agente di sviluppo a comandi testuali, finché non c'è l'agente AI |
+| `src/ai-agent.js` | `createAiAgent(level)`: adattatore verso il harness AI e prompt di sistema |
+| `src/dev-agent.js` | agente di sviluppo a comandi testuali |
 | `src/http.js` | server HTTP: file statici da `public/` |
 | `src/ws.js` | WebSocket su `/ws` |
 | `public/` | pagina web servita: per ora una pagina provvisoria; il frontend ([`frontend`](../../frontend/README.md)) può compilarsi qui con `npm run build:engine` |
@@ -50,16 +58,37 @@ Se l'agente lancia un errore o supera il timeout (120 s), l'engine invia `error`
 ## Collegare l'agente AI
 
 ```js
-const engine = createEngine(level, { agent });   // oppure engine.agent = agent
+const engine = createEngine(level, { agent: createAiAgent(level) });   // oppure { agent: devAgent }
 
-// agent: async (text, tools) => void
+// agent: async (text, tools, { signal }) => void, con reset() opzionale
 // tools: [{ name, description, parameters (JSON Schema), handler(args) → risultato }]
 // Il turno finisce quando la promise si risolve.
 ```
 
 `tools` contiene i tool di gioco descritti nel [README di level](../level/README.md#uso-dallengine)
-e `respond({ text })`. Il registro non dipende dal trasporto: l'adattatore verso il componente agenti
-si scrive sopra. Per ora la CLI usa `devAgent`, che accetta comandi come `act letto guarda_sotto`.
+e `respond({ text })`, l'unico modo di parlare al giocatore. Sono creati per ogni turno: quando il turno
+finisce, anche per timeout, `signal` scatta e i tool rifiutano le chiamate. Così un agente in ritardo
+non cambia lo stato e non risponde dopo `ready`. L'engine chiama `agent.reset()`, se c'è, a ogni nuova partita.
+
+Se l'agente lancia un errore, al giocatore arriva `e.message` come `error`, e l'engine emette
+`agentError` con l'errore completo (la CLI lo scrive in console).
+
+**`createAiAgent(level, options)`** collega l'engine al [harness AI](../agent-harness/README.md):
+
+- a ogni turno registra nel registry del harness i tool di gioco (non `respond`) e chiama `runTurn`;
+  la narrazione restituita arriva al giocatore con `respond`;
+- conserva la history della conversazione tra i turni e la azzera con `reset()`;
+- se il turno è scaduto ne scarta il risultato;
+- se il harness fallisce (provider, argomenti dei tool non validi, troppi round…) al giocatore arriva
+  un messaggio semplice in italiano (`AI_ERROR_MESSAGE`); l'errore del harness è in `e.cause`;
+- il prompt di sistema (`systemInstructionFor(level)`) chiede risposte in italiano, l'uso dei tool come
+  unica fonte di verità e fantasmi che rivelano solo ciò che `talk` restituisce in `knowledge`;
+- `options` sono quelle di `createAgent` del harness (provider, chiave, client, modelli, `maxToolRounds`),
+  più `systemInstruction` per sostituire il prompt. La configurazione si verifica subito: senza chiave
+  `createAiAgent` lancia un errore.
+
+`devAgent` accetta comandi come `act letto guarda_sotto` e non chiama nessun modello: serve per
+sviluppare e provare il frontend senza chiavi.
 
 ## WebSocket `/ws`
 

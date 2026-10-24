@@ -13,7 +13,7 @@ che importa questo modulo.
 corepack pnpm install   # dalla radice del repo (workspace pnpm)
 cd packages/level
 corepack pnpm test      # test
-corepack pnpm play      # gioca il livello 0 dal terminale, chiamando i tool a mano
+corepack pnpm play      # gioca il livello 1 dal terminale, chiamando i tool a mano
 ```
 
 ## Uso dall'engine
@@ -21,7 +21,7 @@ corepack pnpm play      # gioca il livello 0 dal terminale, chiamando i tool a m
 ```js
 import { loadLevelFile, createGame, toolDefinitions } from '@badnight/level';
 
-const level = await loadLevelFile('levels/level-0.yaml'); // lancia LevelError (con .errors) se non è valido
+const level = await loadLevelFile('levels/level-1.yaml'); // lancia LevelError (con .errors) se non è valido
 const game = createGame(level);                           // oppure createGame(level, { state: salvato })
 
 // toolDefinitions: [{ name, description, parameters }] da passare al modello come function declarations.
@@ -62,7 +62,7 @@ e solo le informazioni (`knowledge`) sbloccate dallo stato attuale.
 
 ## Formato del livello
 
-Esempio completo: [levels/level-0.yaml](levels/level-0.yaml). Gli id sono in minuscolo con `_`.
+Esempio completo: [levels/level-1.yaml](levels/level-1.yaml). Gli id sono in minuscolo con `_`.
 Gli id di oggetti e fantasmi sono unici in tutto il livello, e lo stesso vale per i traguardi.
 Non c'è inventario: gli oggetti restano nella loro stanza. Un oggetto da trovare si dichiara `hidden: true`
 e compare con l'effetto `reveal`.

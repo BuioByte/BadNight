@@ -37,3 +37,7 @@ The harness treats provider output as untrusted, validates tool names and argume
 - Keep game state authoritative: tools may examine only visible entities in the current room. Objects remain in their rooms; progression uses entity states and milestones. Hidden entities remain unavailable until revealed.
 - Assets are logical identifiers, not URLs or filesystem paths; resolving them must not grant tools file or network access.
 - This compatibility repair introduces no credentials, persistence, authentication, or network endpoints; related controls remain unchanged and production controls remain out of scope for the local prototype.
+
+## Engine and agent harness
+
+The engine loads provider credentials from the server environment or the ignored root `.env`; they never reach the browser. Player text reaches the model only as the harness `Action` input, and the model acts on the game only through the registered game tools, whose results come from the level rules. Tools are bound to the current turn and reject calls after it ends (including a timeout), so a late model response cannot change the state or reply after `ready`. Harness and provider errors reach the browser as a generic message; details are logged on the server console only.
