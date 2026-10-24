@@ -1,0 +1,487 @@
+/* BadNight: notte, pergamena e luce di candela. */
+
+:root {
+  --night: #0b0a0f;
+  --night-2: #14111c;
+  --night-3: #1d1827;
+  --bruise: #3b2a4f;
+  --bruise-2: #5a4275;
+  --blood: #8e1c24;
+  --blood-light: #e0646a;
+  --candle: #e8b04b;
+  --candle-dim: #9c7633;
+  --parchment: #d9cfb8;
+  --parchment-dim: #a89f8b;
+
+  --font-title: 'UnifrakturMaguntia', 'Old English Text MT', serif;
+  --font-text: 'IM Fell English', Georgia, 'Times New Roman', serif;
+  --font-ascii: 'VT323', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+
+  --gutter: clamp(16px, 3vw, 32px);
+  --radius: 4px;
+  --glow: 0 0 18px rgb(232 176 75 / 0.25);
+
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 16px;
+  padding: 16px var(--gutter);
+  background:
+    radial-gradient(ellipse at 50% 0%, rgb(59 42 79 / 0.45), transparent 60%),
+    radial-gradient(ellipse at 50% 120%, rgb(142 28 36 / 0.25), transparent 55%),
+    var(--night);
+  color: var(--parchment);
+  font: 18px/1.55 var(--font-text);
+  overflow-x: hidden;
+}
+
+/* Vignettatura sui bordi dello schermo */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 55%, rgb(0 0 0 / 0.7) 100%);
+  z-index: 2;
+}
+
+.fog {
+  position: fixed;
+  inset: -20%;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.35;
+  background:
+    radial-gradient(ellipse 40% 20% at 20% 70%, rgb(217 207 184 / 0.08), transparent 70%),
+    radial-gradient(ellipse 35% 18% at 75% 40%, rgb(217 207 184 / 0.06), transparent 70%),
+    radial-gradient(ellipse 50% 25% at 50% 90%, rgb(90 66 117 / 0.12), transparent 70%);
+  animation: drift 40s ease-in-out infinite alternate;
+}
+
+.top,
+.stage,
+.prompt {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------- Header ---------- */
+
+.top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 24px;
+  border-bottom: 1px solid var(--bruise);
+  padding-bottom: 12px;
+}
+
+.brand {
+  margin: 0;
+  font: 400 clamp(2.2rem, 6vw, 3.4rem) / 1 var(--font-title);
+  color: var(--candle);
+  text-shadow: 0 0 12px rgb(232 176 75 / 0.45), 0 2px 0 var(--blood);
+  letter-spacing: 0.02em;
+}
+
+.where {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1 1 200px;
+}
+
+.level-title {
+  color: var(--parchment-dim);
+  font-style: italic;
+  font-size: 0.95rem;
+}
+
+.room-name {
+  font-size: 1.35rem;
+  color: var(--parchment);
+}
+
+.progress {
+  display: flex;
+  gap: 6px;
+  align-items: flex-end;
+  height: 28px;
+}
+
+.candle {
+  position: relative;
+  width: 8px;
+  height: 18px;
+  background: linear-gradient(var(--parchment-dim), #6f685a);
+  border-radius: 2px 2px 1px 1px;
+}
+
+.candle.lit::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  width: 6px;
+  height: 10px;
+  margin-left: -3px;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  background: radial-gradient(circle at 50% 70%, #fff3c4, var(--candle) 55%, transparent 75%);
+  box-shadow: 0 0 10px var(--candle);
+  animation: flicker 2.4s infinite;
+}
+
+/* ---------- Bottoni ---------- */
+
+button {
+  font: inherit;
+  cursor: pointer;
+  color: var(--parchment);
+  background: linear-gradient(var(--night-3), var(--night-2));
+  border: 1px solid var(--bruise-2);
+  border-radius: var(--radius);
+  padding: 8px 16px;
+  transition: border-color 0.2s, box-shadow 0.2s, color 0.2s;
+}
+
+button:hover:not(:disabled) {
+  border-color: var(--candle);
+  color: var(--candle);
+  box-shadow: var(--glow);
+}
+
+button:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--candle);
+  outline-offset: 2px;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+body.locked button:disabled,
+body.locked textarea:disabled {
+  cursor: wait;
+}
+
+/* ---------- Area principale ---------- */
+
+.stage {
+  display: grid;
+  grid-template-columns: minmax(0, 45fr) minmax(0, 55fr);
+  gap: 16px;
+  min-height: 0;
+}
+
+.frame {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  border: 1px solid var(--bruise-2);
+  border-radius: var(--radius);
+  background: linear-gradient(160deg, var(--night-2), var(--night));
+  box-shadow: inset 0 0 0 4px var(--night), inset 0 0 0 5px var(--bruise), 0 8px 30px rgb(0 0 0 / 0.5);
+  padding: 20px;
+}
+
+/* Ornamenti agli angoli */
+.frame::before,
+.frame::after {
+  content: '✠';
+  position: absolute;
+  font-size: 14px;
+  line-height: 1;
+  color: var(--candle-dim);
+}
+
+.frame::before {
+  top: 6px;
+  left: 8px;
+}
+
+.frame::after {
+  bottom: 6px;
+  right: 8px;
+}
+
+.illustration {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.art {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  min-height: 240px;
+  overflow: hidden;
+  font: clamp(12px, 1.6vw, 20px) / 1.05 var(--font-ascii);
+  color: var(--candle);
+  text-shadow: 0 0 6px rgb(232 176 75 / 0.6);
+  animation: flicker 3.2s infinite;
+}
+
+.art.stirring {
+  animation: flicker 0.35s infinite;
+}
+
+.caption {
+  border-top: 1px solid var(--bruise);
+  padding-top: 10px;
+  font-size: 0.95rem;
+  color: var(--parchment-dim);
+}
+
+.exits {
+  margin: 0;
+}
+
+.milestones {
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+  font-style: italic;
+}
+
+.milestones li::before {
+  content: '✦ ';
+  color: var(--candle-dim);
+}
+
+/* ---------- Racconto ---------- */
+
+.story {
+  display: flex;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgb(217 207 184 / 0.05), transparent 70%),
+    linear-gradient(160deg, #17131c, #0f0d13);
+}
+
+.story-log {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 8px;
+  scrollbar-color: var(--bruise-2) transparent;
+}
+
+.entry {
+  margin: 0 0 14px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.entry.entering {
+  animation: appear 0.6s ease-out;
+}
+
+.entry-intro,
+.entry-outro {
+  color: var(--parchment);
+  font-size: 1.05em;
+  border-left: 2px solid var(--blood);
+  padding-left: 12px;
+}
+
+.entry-intro::first-letter,
+.entry-outro::first-letter {
+  font-family: var(--font-title);
+  font-size: 2.4em;
+  float: left;
+  line-height: 0.9;
+  margin: 4px 6px 0 0;
+  color: var(--blood-light);
+}
+
+.entry-outro {
+  border-left-color: var(--candle);
+}
+
+.entry-input {
+  color: var(--candle);
+  font-style: italic;
+}
+
+.entry-input::before {
+  content: '› ';
+}
+
+.entry-output {
+  color: var(--parchment);
+}
+
+.entry-error {
+  color: var(--blood-light);
+  font-style: italic;
+}
+
+/* ---------- Prompt ---------- */
+
+.prompt {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px 12px;
+  align-items: stretch;
+}
+
+.prompt textarea {
+  resize: none;
+  min-height: 3.2em;
+  font: inherit;
+  color: var(--parchment);
+  background: var(--night-2);
+  border: 1px solid var(--bruise-2);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  box-shadow: var(--glow);
+  animation: glow 3.6s ease-in-out infinite;
+  transition: opacity 0.2s;
+}
+
+.prompt textarea::placeholder {
+  color: var(--parchment-dim);
+  font-style: italic;
+}
+
+.prompt textarea:disabled {
+  opacity: 0.5;
+  animation: none;
+  box-shadow: none;
+}
+
+.send {
+  min-width: 7em;
+  font-size: 1.1rem;
+  color: var(--candle);
+  border-color: var(--candle-dim);
+}
+
+.status {
+  grid-column: 1 / -1;
+  margin: 0;
+  min-height: 1.4em;
+  font-style: italic;
+  font-size: 0.95rem;
+  color: var(--parchment-dim);
+}
+
+body.locked .status::after {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-left: 8px;
+  border-radius: 50%;
+  background: var(--candle);
+  box-shadow: 0 0 8px var(--candle);
+  animation: flicker 1s infinite;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---------- Animazioni ---------- */
+
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  12% { opacity: 0.86; }
+  20% { opacity: 0.97; }
+  38% { opacity: 0.8; }
+  44% { opacity: 1; }
+  70% { opacity: 0.9; }
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 14px rgb(232 176 75 / 0.18); }
+  50% { box-shadow: 0 0 22px rgb(232 176 75 / 0.32); }
+}
+
+@keyframes appear {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes drift {
+  from { transform: translate3d(-3%, 0, 0); }
+  to { transform: translate3d(3%, -2%, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ---------- Schermi grandi: tutto in una schermata, scorre solo il racconto ---------- */
+
+@media (min-width: 900px) {
+  body {
+    height: 100dvh;
+    overflow: hidden;
+  }
+}
+
+/* ---------- Schermi stretti: una colonna, illustrazione sopra ---------- */
+
+@media (max-width: 899px) {
+  .stage {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .art {
+    min-height: 180px;
+    font-size: clamp(10px, 3vw, 16px);
+  }
+
+  .story-log {
+    max-height: 60vh;
+  }
+
+  .prompt {
+    position: sticky;
+    bottom: 0;
+    padding: 12px 0;
+    background: linear-gradient(transparent, var(--night) 30%);
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    font-size: 17px;
+  }
+
+  .prompt {
+    grid-template-columns: 1fr;
+  }
+
+  .send {
+    width: 100%;
+  }
+}

@@ -113,7 +113,12 @@ function fromOpenAIResponse(response: OpenAIChatCompletionResponse): GenerateCon
 
 export function createOpenAICompatibleClient(options: OpenAICompatibleOptions) {
   const fetcher = options.fetch ?? fetch;
-  const baseUrl = (options.baseUrl ?? 'http://localhost:1234/v1').replace(/\/+$/, '');
+  const configuredBaseUrl = options.baseUrl ?? 'http://localhost:1234/v1';
+  let baseUrlEnd = configuredBaseUrl.length;
+  while (baseUrlEnd > 0 && configuredBaseUrl.charCodeAt(baseUrlEnd - 1) === 47) {
+    baseUrlEnd -= 1;
+  }
+  const baseUrl = configuredBaseUrl.slice(0, baseUrlEnd);
 
   return {
     models: {
