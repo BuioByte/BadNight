@@ -172,8 +172,8 @@ export class Game {
     });
   }
 
-  // Non cambia lo stato: fornisce al modulo dei dialoghi la personalità del fantasma
-  // e solo le informazioni sbloccate finora.
+  // Non cambia lo stato: fornisce al modulo dei dialoghi la personalità del fantasma, solo le
+  // informazioni sbloccate finora e le azioni possibili (per chiedergli di fare qualcosa si usa act).
   talk(ghost) {
     const { target: g, error } = this.#find(ghost, ['ghost']);
     if (error) return fail(error);
@@ -186,6 +186,7 @@ export class Game {
         ...(g.voice && { voice: g.voice }),
       },
       knowledge: g.knowledge.filter((k) => !k.if || evaluate(k.if, this.#s)).map((k) => k.text),
+      actions: Object.values(g.actions).map((a) => ({ name: a.name, ...(a.description && { description: a.description }) })),
     };
   }
 

@@ -75,6 +75,8 @@ test('al modello vanno i tool di gioco, non respond, e il prompt del livello', a
   assert.match(config.systemInstruction, /in italiano/);
   assert.match(config.systemInstruction, /al massimo due chiamate/);
   assert.match(config.systemInstruction, /usa al massimo look, poi fermati/);
+  assert.match(config.systemInstruction, /chiede a un fantasma di fare qualcosa, usa act sul fantasma/);
+  assert.match(config.systemInstruction, /solo se il risultato di act o move lo conferma in changes/);
   assert.ok(!config.systemInstruction.includes(level.outro), 'il finale lo mostra la pagina, non il modello');
 });
 

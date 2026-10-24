@@ -42,7 +42,7 @@ così l'agente può correggersi.
 | `examine` | `target` | `target`: descrizione (incluso lo stato), `state`, `actions` |
 | `act` | `target`, `action` | `text`, `changes` |
 | `move` | `to` | `text`, `changes` (se l'uscita è chiusa: testo `locked` e `changes` vuoto). Alla vittoria `changes.won` è `true`; il testo non contiene l'`outro`, che mostra chi presenta la partita |
-| `talk` | `ghost` | `ghost` (nome, descrizione, `personality`, `voice`), `knowledge` |
+| `talk` | `ghost` | `ghost` (nome, descrizione, `personality`, `voice`), `knowledge`, `actions` (da eseguire con `act`) |
 
 `talk` non genera il dialogo. Restituisce il contesto da passare a Gemma: la personalità del fantasma
 e solo le informazioni (`knowledge`) sbloccate dallo stato attuale.

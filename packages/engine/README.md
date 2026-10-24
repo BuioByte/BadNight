@@ -103,7 +103,9 @@ Se l'agente lancia un errore, al giocatore arriva `e.message` come `error`, e l'
   (di regola al massimo due: ogni chiamata è lenta e il giocatore non la vede) e i tool come unica fonte di
   verità. Se la richiesta è chiara il modello agisce subito; se è vaga usa al massimo `look` e risponde con un
   suggerimento (cosa c'è intorno, da dove cominciare) invece di esplorare al posto del giocatore. Non rivela le
-  soluzioni, e i fantasmi dicono solo ciò che `talk` restituisce in `knowledge`;
+  soluzioni, e i fantasmi dicono solo ciò che `talk` restituisce in `knowledge`. Le richieste a un fantasma
+  passano da `act` (le sue azioni sono in `talk` ed `examine`), e un cambiamento si racconta solo se `act` o
+  `move` lo confermano in `changes`;
 - `options` sono quelle di `createAgent` del harness (provider, chiave, client, modelli, `maxToolRounds`),
   più `systemInstruction` per sostituire il prompt. La configurazione si verifica subito: senza chiave
   `createAiAgent` lancia un errore.

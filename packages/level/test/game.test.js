@@ -247,3 +247,9 @@ test('ritratti e pianoforte consentono di correggere gli errori senza saltare gl
   assert.equal(game.look().exits.find((exit) => exit.to === 'camera_genitori').open, true);
   assert.deepEqual(game.act('pianoforte', 'premi_zucca').changes, {});
 });
+
+test('talk elenca anche le azioni del fantasma, da eseguire con act', () => {
+  const game = createGame(level);
+  assert.deepEqual(game.talk('conte_sbadiglio').actions.map((a) => a.name), ['chiedi_luce']);
+  assert.deepEqual(game.talk('conte_sbadiglio').actions, game.examine('conte_sbadiglio').target.actions, 'le stesse azioni di examine');
+});
