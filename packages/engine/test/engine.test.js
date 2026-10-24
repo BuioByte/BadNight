@@ -60,10 +60,12 @@ test("se l'agente fallisce o non risponde il turno finisce comunque con ready", 
   }
 });
 
-test('reset ricomincia la partita', async () => {
+test('reset ricomincia la partita e manda state e ready', async () => {
   const engine = createEngine(level, { agent: devAgent });
   await engine.input('act comodino apri');
+  const messages = record(engine);
   assert.equal(engine.reset(), true);
+  assert.deepEqual(messages.map((m) => m.type), ['state', 'ready']);
   const s = engine.snapshot();
   assert.deepEqual(s.history, []);
   assert.ok(!s.view.objects.some((o) => o.id === 'candela'));
@@ -114,8 +116,9 @@ test('WebSocket', async (t) => {
   assert.deepEqual(got.map((m) => m.type), ['error', 'error', 'error']);
 
   ws.send(JSON.stringify({ type: 'reset' }));
-  got = await until('state');
-  assert.deepEqual(got.at(-1).history, []);
+  got = await until('ready');
+  assert.deepEqual(got.map((m) => m.type), ['state', 'ready']);
+  assert.deepEqual(got[0].history, []);
 });
 
 test('shutdown chiude i WebSocket aperti e il server', async () => {

@@ -99,14 +99,14 @@ Messaggi JSON con un campo `type`.
 | Messaggio | Effetto |
 | --- | --- |
 | `{ type: 'input', text }` | avvia un turno. Rifiutato (con `error`) se un turno è già in corso |
-| `{ type: 'reset' }` | nuova partita. Rifiutato durante un turno |
+| `{ type: 'reset' }` | nuova partita: risponde con `state` e `ready`. Rifiutato durante un turno |
 
 **Engine → frontend**
 
 | Messaggio | Quando |
 | --- | --- |
 | `{ type: 'state', level, view, completed, won, busy, history }` | alla connessione, a fine turno e dopo un reset |
-| `{ type: 'ready' }` | alla connessione (se non c'è un turno in corso) e a fine turno: riattivare l'input |
+| `{ type: 'ready' }` | alla connessione (se non c'è un turno in corso), a fine turno e dopo un reset: riattivare l'input |
 | `{ type: 'input', seq, at, text }` | il testo del giocatore, all'inizio del turno |
 | `{ type: 'tool', seq, at, tool, args, result }` | l'agente ha chiamato un tool di gioco. `result.changes` contiene le variazioni |
 | `{ type: 'output', seq, at, text }` | testo dell'agente per il giocatore |

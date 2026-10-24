@@ -91,13 +91,14 @@ export class Engine extends EventEmitter {
     return true;
   }
 
-  // Nuova partita. Rifiutata durante un turno.
+  // Nuova partita. Rifiutata durante un turno. Come a fine turno, arrivano state e poi ready.
   reset() {
     if (this.#busy) return false;
     this.#game = createGame(this.#level);
     this.#history = [];
     this.#agent?.reset?.();
     this.emit('message', this.snapshot());
+    this.emit('message', { type: 'ready' });
     return true;
   }
 

@@ -52,10 +52,7 @@ Il giocatore non può andare avanti finché l'engine non ha risposto:
 - all'invio si blocca prima di spedire il messaggio, così un doppio Enter non manda due turni;
 - dopo una disconnessione resta bloccato finché l'engine, alla riconnessione, non manda `ready`;
 - un `state` con `busy: true` (pagina ricaricata durante un turno) lo tiene bloccato;
-- dopo la vittoria resta attivo solo "Nuova notte".
-
-Eccezione: l'engine risponde a `reset` con il solo `state`, senza `ready`. Per questo lo `state` che arriva
-dopo un nostro `reset` vale come risposta e sblocca l'input.
+- dopo la vittoria resta attivo solo "Nuova notte"; anche il `reset` si conclude con `ready`.
 
 ## Illustrazioni
 
