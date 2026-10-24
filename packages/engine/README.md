@@ -17,7 +17,7 @@ corepack pnpm --filter @badnight/engine test
 badnight [--level file.yaml] [--port 3000] [--host 127.0.0.1] [--agent ai|dev]
 ```
 
-- `--level`: default `packages/level/levels/level-1.yaml`. I test dell'engine usano il livello di prova `level-0.yaml`.
+- `--level`: default `packages/level/levels/level-1.yaml`. I test dell'engine usano un livello minimo tutto loro, `test/fixtures/level.yaml`.
 - `--agent ai`: risponde l'agente AI del harness. Le chiavi si leggono dall'ambiente o dal file `.env`
   nella radice del repo (vedi il README principale). `--agent dev`: l'agente di sviluppo a comandi testuali.
   Senza `--agent`: `ai` se è impostato `GEMINI_API_KEY` o `AGENT_PROVIDER`, altrimenti `dev`.
