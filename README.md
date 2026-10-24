@@ -121,7 +121,8 @@ La schermata iniziale permette di attivare o disattivare l'audio. Il mixer contr
 
 ```sh
 corepack pnpm start          # compila il frontend e avvia l'engine su http://127.0.0.1:3000
-                             # (opzioni: --level, --port, --host, --agent, --web)
+                             # (opzioni: --level, --port, --host, --agent, --web, --llm-log)
+                             # con l'AI le chiamate al provider finiscono in logs/llm-calls.log
 corepack pnpm build:frontend # solo la build del frontend, in frontend/dist
 corepack pnpm test           # test di level, engine e harness
 corepack pnpm build          # build TypeScript del harness

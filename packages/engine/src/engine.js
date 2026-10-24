@@ -27,6 +27,7 @@ export class Engine extends EventEmitter {
   // (vedi tools.js) e un AbortSignal che scatta a fine turno (anche per timeout); il turno finisce
   // quando la promise si risolve. Se l'agente ha un metodo reset(), viene chiamato a ogni nuova partita.
   // Gli errori dell'agente arrivano al giocatore come `error` (e.message) e sono emessi come 'agentError'.
+  // A fine turno l'engine emette 'turn' con { text, ms, tools, error? }, per i log.
   constructor(level, { agent, turnTimeout = DEFAULT_TURN_TIMEOUT } = {}) {
     super();
     this.#level = level;
@@ -70,7 +71,10 @@ export class Engine extends EventEmitter {
     this.#busy = true;
     this.#emit({ type: 'input', text });
     const turn = new AbortController();
+    const started = Date.now();
+    const firstSeq = this.#history.length;
     let timer;
+    let error;
     try {
       if (!this.#agent) throw new Error('Nessun agente AI collegato.');
       const timeout = new Promise((_, reject) => {
@@ -79,12 +83,15 @@ export class Engine extends EventEmitter {
       const tools = createTools(this, turn.signal);
       await Promise.race([this.#agent(text, tools, { signal: turn.signal }), timeout]);
     } catch (e) {
+      error = e;
       this.#emit({ type: 'error', error: e.message });
       this.emit('agentError', e);
     } finally {
       turn.abort();
       clearTimeout(timer);
       this.#busy = false;
+      const tools = this.#history.slice(firstSeq).filter((m) => m.type === 'tool').length;
+      this.emit('turn', { text, ms: Date.now() - started, tools, ...(error && { error }) });
       this.emit('message', this.snapshot());
       this.emit('message', { type: 'ready' });
     }

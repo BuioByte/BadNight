@@ -24,9 +24,22 @@ badnight [--level file.yaml] [--port 3000] [--host 127.0.0.1] [--agent ai|dev] [
   La console mostra quale agente è attivo.
 - `--web`: la cartella della pagina da servire. Senza `--web`: il frontend compilato (`frontend/dist`, lo crea
   `corepack pnpm start` dalla radice) se c'è, altrimenti la pagina provvisoria `public/`. La console mostra quale.
+- `--llm-log`: con l'agente AI, il file dove registrare le chiamate al provider (default `logs/llm-calls.log`
+  nella radice; `off` lo disattiva). Vedi "Log" qui sotto.
 - Se la porta è occupata l'engine prova le successive.
 
 `start` e `test` compilano prima il harness (TypeScript).
+
+### Log
+
+- **Console**: una riga per turno, con orario, testo, durata e numero di tool usati. Se il turno fallisce,
+  sotto c'è l'errore riassunto lungo la catena delle cause (per gli errori del provider: codice, stato e
+  messaggio), lo stack solo per gli errori di programmazione, e il percorso del log delle chiamate.
+- **`logs/llm-calls.log`** (solo con l'agente AI): ogni chiamata HTTP al provider, con richiesta e risposta
+  JSON complete, stato e durata; anche gli errori di rete e i tentativi ripetuti dall'SDK. Il file si svuota a
+  ogni avvio ed è ignorato da git. Contiene testo del giocatore e del modello, ma non le intestazioni, dove
+  viaggiano le chiavi; una chiave nell'URL è oscurata. Si ottiene intercettando il `fetch` del processo
+  (`startLlmLog` in `src/llm-log.js`), quindi funziona con ogni provider senza toccare il harness.
 
 ## Struttura
 
@@ -37,6 +50,8 @@ badnight [--level file.yaml] [--port 3000] [--host 127.0.0.1] [--agent ai|dev] [
 | `src/tools.js` | `createTools(engine)`: i tool per l'agente AI come funzioni |
 | `src/ai-agent.js` | `createAiAgent(level)`: adattatore verso il harness AI e prompt di sistema |
 | `src/dev-agent.js` | agente di sviluppo a comandi testuali |
+| `src/errors.js` | `describeError`: errore riassunto per la console |
+| `src/llm-log.js` | `startLlmLog`: log su file delle chiamate al provider |
 | `src/http.js` | server HTTP: file statici da `public/` |
 | `src/ws.js` | WebSocket su `/ws` |
 | `public/` | pagina provvisoria, servita solo se il frontend ([`frontend`](../../frontend/README.md)) non è compilato |
