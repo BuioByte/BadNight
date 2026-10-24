@@ -8,7 +8,7 @@ Regole e stato della partita sono nel package [`level`](../level/README.md).
 
 ```sh
 corepack pnpm install    # dalla radice del repo (workspace pnpm)
-corepack pnpm start      # = badnight, livello 0 su http://127.0.0.1:3000
+corepack pnpm start      # = badnight, livello 1 su http://127.0.0.1:3000
 corepack pnpm start -- --port 3100
 corepack pnpm --filter @badnight/engine test
 ```
@@ -17,7 +17,7 @@ corepack pnpm --filter @badnight/engine test
 badnight [--level file.yaml] [--port 3000] [--host 127.0.0.1] [--agent ai|dev]
 ```
 
-- `--level`: default `packages/level/levels/level-0.yaml`.
+- `--level`: default `packages/level/levels/level-1.yaml`. I test dell'engine usano il livello di prova `level-0.yaml`.
 - `--agent ai`: risponde l'agente AI del harness. Le chiavi si leggono dall'ambiente o dal file `.env`
   nella radice del repo (vedi il README principale). `--agent dev`: l'agente di sviluppo a comandi testuali.
   Senza `--agent`: `ai` se è impostato `GEMINI_API_KEY` o `AGENT_PROVIDER`, altrimenti `dev`.

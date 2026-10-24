@@ -26,7 +26,7 @@ if (args[0] === '--') args.shift();
 const { values: opts } = parseArgs({
   args,
   options: {
-    level: { type: 'string', default: fileURLToPath(new URL('../levels/level-0.yaml', import.meta.resolve('@badnight/level'))) },
+    level: { type: 'string', default: fileURLToPath(new URL('../levels/level-1.yaml', import.meta.resolve('@badnight/level'))) },
     port: { type: 'string', default: '3000' },
     host: { type: 'string', default: '127.0.0.1' },
     agent: { type: 'string', default: process.env.GEMINI_API_KEY || process.env.AGENT_PROVIDER ? 'ai' : 'dev' },

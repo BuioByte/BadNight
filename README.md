@@ -52,7 +52,8 @@ Il caricamento dei livelli, lo stato della partita e i tool per l'agente sono in
 [`packages/level`](packages/level/README.md).
 
 - **Livello in YAML**: stanze, uscite, oggetti, fantasmi ed enigmi sono descritti in un file YAML,
-  che l'engine carica e valida all'avvio. Il livello di default è `levels/level-0.yaml`.
+  che l'engine carica e valida all'avvio. Il livello di default è `levels/level-1.yaml`;
+  `levels/level-0.yaml` è un livello di prova stabile, usato dai test.
 - **Oggetti e azioni**: ogni oggetto (e ogni fantasma) ha una lista di azioni possibili.
   Ogni azione ha una lista ordinata di esiti possibili: vale il primo la cui condizione è vera.
   Un esito ha un testo e degli effetti, ad esempio cambiare lo stato di un oggetto, far comparire
