@@ -5,4 +5,4 @@ export {
   UnknownToolError,
   createAgent,
 } from './agent.js';
-export type { AgentOptions, AgentTool, ToolExecutor, TurnInput, TurnResult } from './agent.js';
+export type { Agent, AgentOptions, AgentTool, ToolExecutor, TurnInput, TurnResult } from './agent.types.js';
