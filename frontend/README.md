@@ -8,6 +8,11 @@ Ha una **pipeline di build separata**: è un progetto a sé, fuori dal workspace
 `package.json`, il suo lockfile e i suoi comandi. Non importa codice dell'engine. Usa [Vite](https://vite.dev)
 come server di sviluppo e per la build.
 
+Per giocare basta `corepack pnpm start` dalla radice del repo: compila il frontend in `frontend/dist` e
+l'engine lo serve su http://127.0.0.1:3000, insieme al WebSocket.
+
+Per sviluppare con la ricarica automatica:
+
 ```sh
 # 1. l'engine, dalla radice del repo (pnpm via Corepack)
 corepack pnpm install
@@ -22,9 +27,8 @@ npm run dev               # http://localhost:5173, /ws va in proxy all'engine
 | Comando | Cosa fa |
 | --- | --- |
 | `npm run dev` | server di sviluppo con ricarica automatica |
-| `npm run build` | build in `frontend/dist/` |
+| `npm run build` | build in `frontend/dist/`, che l'engine serve (lo fa anche `corepack pnpm start`) |
 | `npm run preview` | serve `dist/` (con il proxy verso l'engine) per provare la build |
-| `npm run build:engine` | build direttamente in `packages/engine/public/`, al posto della pagina provvisoria: da usare quando lo si decide con chi segue l'engine |
 
 L'indirizzo dell'engine per il proxy si cambia con `ENGINE_URL` (vedi `.env.example`), per esempio se
 l'engine è partito su un'altra porta.

@@ -9,7 +9,7 @@ Serve Node.js LTS (`nvm use`) e pnpm tramite Corepack.
 ```sh
 corepack pnpm install
 cp .env.example .env    # poi inserisci le chiavi del provider AI (il file .env non va committato)
-corepack pnpm start     # avvia l'engine e stampa il link alla pagina web
+corepack pnpm start     # compila il frontend, avvia l'engine e stampa il link alla pagina web
 ```
 
 For live provider tests, set `GEMINI_API_KEY` or configure NVIDIA NIM in the server-side environment:
@@ -86,9 +86,10 @@ a sé, fuori dal workspace pnpm, con il suo `package.json` e il suo lockfile npm
 dell'engine: parla con l'engine solo attraverso il WebSocket `/ws`, e il giocatore può scrivere solo
 dopo che l'engine ha risposto (`ready`).
 
-In sviluppo gira sul server di Vite, che manda `/ws` in proxy all'engine. Con `npm run build:engine`
-si compila direttamente in `packages/engine/public/`, al posto della pagina provvisoria, e la serve
-l'engine stesso.
+`corepack pnpm start` lo compila in `frontend/dist` e l'engine lo serve, sulla stessa porta del WebSocket.
+Se `frontend/dist` non c'è, l'engine serve una pagina provvisoria (`packages/engine/public/`).
+In sviluppo il frontend può girare anche sul server di Vite, con ricarica automatica, che manda `/ws`
+in proxy all'engine.
 
 ## Provider AI
 
@@ -109,7 +110,7 @@ La chiave è facoltativa per server locali che non richiedono autenticazione. `O
 ## Struttura
 
 - `frontend/`: pagina web del gioco (Vite, progetto npm separato).
-- `packages/engine/`: server CLI, partita, WebSocket per il frontend, pagina web servita (`public/`).
+- `packages/engine/`: server CLI, partita, WebSocket per il frontend; serve il frontend compilato.
 - `packages/level/`: livello YAML, regole della partita e tool `look`, `examine`, `act`, `move`, `talk`.
 - `packages/agent-harness/`: registry dei tool e loop Gemini/OpenAI-compatible.
 - `docs/MVSP.md`: baseline di sicurezza minima del prototipo.
@@ -119,19 +120,19 @@ La schermata iniziale permette di attivare o disattivare l'audio. Il mixer contr
 ## Comandi
 
 ```sh
-corepack pnpm start          # engine su http://127.0.0.1:3000 (opzioni: --level, --port, --host)
+corepack pnpm start          # compila il frontend e avvia l'engine su http://127.0.0.1:3000
+                             # (opzioni: --level, --port, --host, --agent, --web)
+corepack pnpm build:frontend # solo la build del frontend, in frontend/dist
 corepack pnpm test           # test di level, engine e harness
 corepack pnpm build          # build TypeScript del harness
 corepack pnpm test:live      # test live con Gemini AI Studio e GEMINI_API_KEY
 corepack pnpm test:live:nim  # test live NVIDIA NIM con NVIDIA_API_KEY
 ```
 
-Frontend, con l'engine già avviato:
+Frontend con ricarica automatica, con l'engine già avviato:
 
 ```sh
 cd frontend
 npm install
 npm run dev                  # http://localhost:5173, /ws in proxy all'engine
-npm run build                # build in frontend/dist
-npm run build:engine         # build in packages/engine/public, servita dall'engine
 ```

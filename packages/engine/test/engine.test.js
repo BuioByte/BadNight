@@ -146,3 +146,24 @@ test('alla vittoria il finale non è in nessun output: lo mostra il frontend da 
   assert.equal(state.level.outro, level.outro);
   for (const m of messages.filter((m) => m.type === 'output')) assert.ok(!m.text.includes(level.outro), m.text);
 });
+
+test('serve la cartella della pagina anche con un percorso relativo, con i tipi giusti', async (t) => {
+  const { mkdtemp, writeFile, rm } = await import('node:fs/promises');
+  const { tmpdir } = await import('node:os');
+  const { join, relative } = await import('node:path');
+  const dir = await mkdtemp(join(tmpdir(), 'badnight-web-'));
+  await writeFile(join(dir, 'index.html'), '<!doctype html><title>pagina</title>');
+  await writeFile(join(dir, 'tema.wav'), 'RIFF');
+
+  const server = createHttpServer(createEngine(level, { agent: devAgent }), { publicDir: relative(process.cwd(), dir) });
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  t.after(async () => {
+    server.close();
+    await rm(dir, { recursive: true });
+  });
+  const base = `http://127.0.0.1:${server.address().port}`;
+
+  assert.match(await (await fetch(`${base}/`)).text(), /pagina/);
+  assert.equal((await fetch(`${base}/tema.wav`)).headers.get('content-type'), 'audio/wav');
+  assert.equal((await fetch(`${base}/%2e%2e/%2e%2e/etc/passwd`)).status, 404);
+});
