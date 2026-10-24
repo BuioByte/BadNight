@@ -26,8 +26,9 @@ Server locale in Node.js. Tiene lo stato della partita ed è l'unica fonte di ve
   che l'engine carica e valida all'avvio.
 - **Oggetti e azioni**: ogni oggetto (e ogni fantasma) ha una lista di azioni possibili.
   Ogni azione ha una lista ordinata di esiti possibili: vale il primo la cui condizione è vera.
-  Un esito ha un testo e degli effetti, ad esempio cambiare lo stato di un oggetto, mettere qualcosa
-  nell'inventario o completare un traguardo.
+  Un esito ha un testo e degli effetti, ad esempio cambiare lo stato di un oggetto, far comparire
+  un oggetto nascosto o completare un traguardo.
+- **Niente inventario**: gli oggetti restano sempre nella loro stanza, il bambino non li porta con sé.
 - **Stato di una stanza**: è lo stato dei suoi contenuti (bambino, oggetti, fantasmi)
   più un **DAG di traguardi**. Un traguardo si può completare solo quando tutti i suoi prerequisiti
   sono completati, e le uscite si sbloccano al completamento di traguardi. All'avvio l'engine
@@ -40,7 +41,7 @@ Server locale in Node.js. Tiene lo stato della partita ed è l'unica fonte di ve
   - `talk`: parla con un fantasma
 
   Ogni azione restituisce un feedback con la variazione dello stato
-  (oggetti cambiati, inventario, traguardi raggiunti, vittoria).
+  (oggetti cambiati o comparsi, traguardi raggiunti, uscite sbloccate, vittoria).
 - **Dialoghi con i fantasmi**: generati da **Gemma 4** via API (Gemini API).
   I dialoghi non sono scritti a mano: l'engine passa al modello la personalità del fantasma
   e solo le informazioni sbloccate dai traguardi raggiunti. Così il fantasma non può rivelare
@@ -64,7 +65,6 @@ npm start     # stampa il link alla pagina web
 Pagina web servita dall'engine e collegata alle sue API. Mostra:
 
 - la stanza corrente, gli oggetti, i fantasmi e le uscite
-- l'inventario
 - la chat con i fantasmi e con l'agente
 - l'atmosfera: notte, buio, luce di candela, suoni
 

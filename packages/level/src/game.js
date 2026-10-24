@@ -17,8 +17,6 @@ export function evaluate(cond, s) {
     switch (k) {
       case 'completed':
         return list(v).every((m) => s.completed.includes(m));
-      case 'has':
-        return list(v).every((i) => s.inventory.includes(i));
       case 'visited':
         return list(v).every((r) => s.visited.includes(r));
       case 'state':
@@ -39,7 +37,6 @@ export function initialState(level) {
   return {
     room: level.start,
     visited: [level.start],
-    inventory: [],
     completed: [],
     entities: Object.fromEntries(
       Object.values(level.entities).map((e) => [e.id, { state: e.initialState, hidden: e.hidden }]),
@@ -112,7 +109,6 @@ export class Game {
         description: e.description,
         open: exitOpen(e, s),
       })),
-      inventory: s.inventory.map((i) => ref(L.items[i])),
       progress: { visited: s.visited.length, total: Object.keys(L.rooms).length },
       ...(s.won && { won: true }),
     };
@@ -198,19 +194,17 @@ export class Game {
     return ids.filter((id) => !this.#s.entities[id].hidden).map((id) => this.#level.entities[id]);
   }
 
-  // Trova un bersaglio tra gli oggetti/fantasmi visibili nella stanza e l'inventario.
-  #find(id, kinds = ['object', 'ghost', 'item']) {
+  // Trova un bersaglio tra gli oggetti e i fantasmi visibili nella stanza.
+  #find(id, kinds = ['object', 'ghost']) {
     const L = this.#level;
     const s = this.#s;
     const e = L.entities[id];
     if (e && kinds.includes(e.kind) && e.room === s.room && !s.entities[id].hidden) return { target: e };
-    if (kinds.includes('item') && s.inventory.includes(id)) return { target: L.items[id] };
 
     const room = L.rooms[s.room];
-    const candidates = [
-      ...this.#visible([...room.objects, ...room.ghosts]).filter((x) => kinds.includes(x.kind)),
-      ...(kinds.includes('item') ? s.inventory.map((i) => L.items[i]) : []),
-    ].map((x) => x.id);
+    const candidates = this.#visible([...room.objects, ...room.ghosts])
+      .filter((x) => kinds.includes(x.kind))
+      .map((x) => x.id);
     return {
       error: `Qui non c'è "${id}". ${candidates.length ? `Puoi scegliere tra: ${candidates.join(', ')}.` : ''}`.trim(),
     };
@@ -225,12 +219,6 @@ export class Game {
     switch (e.type) {
       case 'set_state':
         s.entities[e.target].state = e.state;
-        break;
-      case 'give':
-        if (!s.inventory.includes(e.item)) s.inventory.push(e.item);
-        break;
-      case 'remove':
-        s.inventory = s.inventory.filter((i) => i !== e.item);
         break;
       case 'complete':
         if (!s.completed.includes(e.milestone)) s.completed.push(e.milestone);
@@ -262,8 +250,6 @@ export class Game {
       if (p.hidden && !n.hidden) revealed.push(ref(e));
       if (!p.hidden && n.hidden) hidden.push(ref(e));
     }
-    const added = next.inventory.filter((i) => !prev.inventory.includes(i)).map((i) => ref(L.items[i]));
-    const removed = prev.inventory.filter((i) => !next.inventory.includes(i)).map((i) => ref(L.items[i]));
     const milestones = next.completed
       .filter((m) => !prev.completed.includes(m))
       .map((m) => ({ id: m, description: L.milestones[m].description }));
@@ -275,9 +261,6 @@ export class Game {
       ...(states.length && { states }),
       ...(revealed.length && { revealed }),
       ...(hidden.length && { hidden }),
-      ...((added.length || removed.length) && {
-        inventory: { ...(added.length && { added }), ...(removed.length && { removed }) },
-      }),
       ...(milestones.length && { milestones }),
       ...(exitsUnlocked.length && { exitsUnlocked }),
       ...(prev.room !== next.room && { room: ref(L.rooms[next.room]) }),

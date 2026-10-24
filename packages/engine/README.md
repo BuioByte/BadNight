@@ -55,7 +55,7 @@ Ogni chiamata, che venga dall'agente o dall'API, finisce nel log degli eventi.
 {
   run: 1,                     // cambia a ogni reset: se cambia, rileggere da since=0
   level: { id, title, intro, outro },
-  view: { room, objects, ghosts, exits, inventory, progress, won? },  // come il tool look
+  view: { room, objects, ghosts, exits, progress, won? },  // come il tool look
   completed: [{ id, description }],
   won: false,
   seq: 3,                     // ultimo evento: il prossimo polling usa since=3

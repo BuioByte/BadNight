@@ -16,13 +16,13 @@ test('i tool chiamano la partita e finiscono nel log', () => {
   const act = tools.find((t) => t.name === 'act');
   const r = act.handler({ target: 'comodino', action: 'apri' });
   assert.equal(r.ok, true);
-  assert.deepEqual(r.changes.inventory, { added: [{ id: 'candela', name: 'Mozzicone di candela' }] });
+  assert.deepEqual(r.changes.revealed, [{ id: 'candela', name: 'Mozzicone di candela' }]);
 
   const s = engine.snapshot();
   assert.equal(s.seq, 1);
   assert.equal(s.events[0].source, 'agent');
   assert.equal(s.events[0].tool, 'act');
-  assert.deepEqual(s.view.inventory, [{ id: 'candela', name: 'Mozzicone di candela' }]);
+  assert.ok(s.view.objects.some((o) => o.id === 'candela'));
   assert.deepEqual(engine.snapshot({ since: 1 }).events, []);
 });
 
@@ -33,7 +33,7 @@ test('reset ricomincia la partita e cambia run', () => {
   const s = engine.snapshot();
   assert.equal(s.run, 2);
   assert.equal(s.seq, 0);
-  assert.deepEqual(s.view.inventory, []);
+  assert.ok(!s.view.objects.some((o) => o.id === 'candela'));
 });
 
 test('API REST', async (t) => {

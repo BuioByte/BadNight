@@ -12,17 +12,6 @@ outro: >-
   Ti tuffi nel lettone, tra mamma e papà. Dalla porta, i fantasmi
   ti salutano con la mano. Buonanotte!
 
-items:
-  candela:
-    name: Mozzicone di candela
-    description: Una candela consumata, ancora buona per fare un po' di luce.
-  chiave:
-    name: Chiave di ferro
-    description: Una chiave pesante e fredda, con un fiocco rosso legato all'anello.
-  spartito:
-    name: Spartito
-    description: Un foglio ingiallito con una ninna nanna. Il titolo dice "Per la porta che dorme".
-
 rooms:
   cameretta:
     name: Cameretta
@@ -59,7 +48,14 @@ rooms:
               - text: Apri il cassetto e trovi un mozzicone di candela. Peccato che sia spento.
                 effects:
                   - set_state: { comodino: aperto }
-                  - give: candela
+                  - reveal: candela
+      candela:
+        name: Mozzicone di candela
+        description: Una candela consumata, ancora buona per fare un po' di luce.
+        hidden: true      # compare aprendo il comodino
+        states:
+          spenta: È spenta.
+          accesa: Brilla di una fiammella azzurra che non scotta.
       letto:
         name: Letto
         description: Il tuo letto, con le coperte tutte arruffate.
@@ -74,11 +70,15 @@ rooms:
                   Alla luce della candela vedi qualcosa luccicare tra la polvere:
                   una chiave di ferro con un fiocco rosso!
                 effects:
-                  - give: chiave
+                  - reveal: chiave
                   - complete: chiave_trovata
               - if: { completed: chiave_trovata }
                 text: Sotto il letto ora ci sono solo polvere e un calzino spaiato.
               - text: È troppo buio per vedere qualcosa là sotto.
+      chiave:
+        name: Chiave di ferro
+        description: Una chiave pesante e fredda, con un fiocco rosso legato all'anello.
+        hidden: true      # compare guardando sotto il letto
       porta:
         name: Porta
         description: La porta della cameretta.
@@ -90,11 +90,13 @@ rooms:
             outcomes:
               - if: { state: { porta: aperta } }
                 text: La porta è già aperta.
-              - if: { has: chiave }
-                text: La chiave gira con un clic e la porta si apre cigolando.
+              - if: { completed: chiave_trovata }
+                text: >-
+                  Infili la chiave nella serratura: gira con un clic e la porta
+                  si apre cigolando.
                 effects:
                   - set_state: { porta: aperta }
-                  - remove: chiave
+                  - hide: chiave
                   - complete: porta_aperta
               - text: La maniglia non si muove. Serve una chiave.
     ghosts:
@@ -106,7 +108,7 @@ rooms:
           al bambino e si preoccupa che non si spaventi. Sa accendere le candele con un soffio.
         knowledge:
           - text: Nel cassetto del comodino c'è un mozzicone di candela.
-          - text: Può accendere una candela con un soffio, se il bambino gliene porta una.
+          - text: Può accendere una candela con un soffio, se il bambino ne trova una.
           - if: { completed: candela_accesa }
             text: Pip gioca sempre sotto il letto, forse ha visto qualcosa.
         actions:
@@ -115,13 +117,14 @@ rooms:
             outcomes:
               - if: { completed: candela_accesa }
                 text: '"La vostra candela brilla già, signorino."'
-              - if: { has: candela }
+              - if: { state: { comodino: aperto } }
                 text: >-
                   Lady Brina soffia piano sul mozzicone e si accende una fiammella
                   azzurra che non scotta.
                 effects:
+                  - set_state: { candela: accesa }
                   - complete: candela_accesa
-              - text: '"Vi accenderei volentieri una candela, se solo ne aveste una."'
+              - text: '"Vi accenderei volentieri una candela, se solo ne trovassimo una."'
       pip:
         name: Pip
         description: Un fantasmino dispettoso, piccolo come un cuscino, che fa le capriole a mezz'aria.
@@ -164,8 +167,12 @@ rooms:
                 text: Solo libri noiosi, senza figure.
               - text: Tra due libri di cucina trovi un foglio ingiallito. È uno spartito!
                 effects:
-                  - give: spartito
+                  - reveal: spartito
                   - complete: spartito_trovato
+      spartito:
+        name: Spartito
+        description: Un foglio ingiallito con una ninna nanna. Il titolo dice "Per la porta che dorme".
+        hidden: true      # compare cercando nella libreria
       pianoforte:
         name: Pianoforte
         description: Un pianoforte a coda nero, con il leggio vuoto.
@@ -174,7 +181,7 @@ rooms:
             outcomes:
               - if: { completed: ninna_nanna_suonata }
                 text: Suoni di nuovo la ninna nanna e Ofelia canta, commossa.
-              - if: { has: spartito }
+              - if: { completed: spartito_trovato }
                 text: >-
                   Appoggi lo spartito sul leggio e suoni la ninna nanna. Ofelia canta con te
                   e dietro l'arazzo una serratura sbadiglia e si apre.

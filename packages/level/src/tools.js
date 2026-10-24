@@ -5,16 +5,16 @@ export const toolDefinitions = [
   {
     name: 'look',
     description:
-      'Descrive la stanza in cui si trova il bambino: oggetti e fantasmi visibili, uscite (aperte o chiuse), inventario e progresso.',
+      'Descrive la stanza in cui si trova il bambino: oggetti e fantasmi visibili, uscite (aperte o chiuse) e progresso.',
   },
   {
     name: 'examine',
     description:
-      "Mostra i dettagli di un oggetto o di un fantasma presente nella stanza, o di un oggetto nell'inventario, con le azioni possibili.",
+      'Mostra i dettagli di un oggetto o di un fantasma presente nella stanza, con le azioni possibili.',
     parameters: {
       type: 'object',
       properties: {
-        target: { type: 'string', description: "id dell'oggetto, del fantasma o dell'oggetto d'inventario (come restituito da look)" },
+        target: { type: 'string', description: "id dell'oggetto o del fantasma (come restituito da look)" },
       },
       required: ['target'],
     },
@@ -22,11 +22,11 @@ export const toolDefinitions = [
   {
     name: 'act',
     description:
-      "Esegue un'azione su un oggetto o un fantasma della stanza, o su un oggetto dell'inventario. Le azioni possibili si scoprono con examine.",
+      "Esegue un'azione su un oggetto o un fantasma della stanza. Le azioni possibili si scoprono con examine.",
     parameters: {
       type: 'object',
       properties: {
-        target: { type: 'string', description: "id dell'oggetto, del fantasma o dell'oggetto d'inventario" },
+        target: { type: 'string', description: "id dell'oggetto o del fantasma" },
         action: { type: 'string', description: "nome dell'azione (come restituito da examine)" },
       },
       required: ['target', 'action'],

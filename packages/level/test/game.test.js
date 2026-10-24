@@ -22,7 +22,7 @@ test('il livello 1 si completa con la soluzione prevista', () => {
 
   assert.deepEqual(results[3].changes, {
     states: [{ id: 'porta', name: 'Porta', from: 'chiusa', to: 'aperta' }],
-    inventory: { removed: [{ id: 'chiave', name: 'Chiave di ferro' }] },
+    hidden: [{ id: 'chiave', name: 'Chiave di ferro' }],
     milestones: [{ id: 'porta_aperta', description: 'La porta della cameretta è aperta.' }],
     exitsUnlocked: [{ from: 'cameretta', to: 'salone' }],
   });
@@ -40,7 +40,7 @@ test('un esito che completa un traguardo viene saltato se mancano i prerequisiti
   const r = game.act('letto', 'guarda_sotto');
   assert.equal(r.text, 'È troppo buio per vedere qualcosa là sotto.');
   assert.deepEqual(r.changes, {});
-  assert.deepEqual(game.state.inventory, []);
+  assert.equal(game.look().objects.some((o) => o.id === 'chiave'), false);
 });
 
 test("un'uscita chiusa non sposta il bambino", () => {
@@ -63,7 +63,7 @@ test('le chiamate non valide spiegano cosa si può fare', () => {
   assert.equal(game.call('talk', { ghost: 'comodino' }).ok, false);
 });
 
-test('examine mostra stato e azioni, anche per gli oggetti in inventario', () => {
+test('examine mostra stato e azioni, anche degli oggetti appena comparsi', () => {
   const game = createGame(level);
   assert.deepEqual(game.examine('comodino').target, {
     id: 'comodino',
@@ -73,8 +73,8 @@ test('examine mostra stato e azioni, anche per gli oggetti in inventario', () =>
     state: 'chiuso',
     actions: [{ name: 'apri', description: 'Aprire il cassetto.' }],
   });
-  game.act('comodino', 'apri');
-  assert.equal(game.examine('candela').target.kind, 'item');
+  assert.deepEqual(game.act('comodino', 'apri').changes.revealed, [{ id: 'candela', name: 'Mozzicone di candela' }]);
+  assert.equal(game.examine('candela').target.state, 'spenta');
 });
 
 test('talk rivela solo le informazioni sbloccate', () => {
@@ -93,7 +93,7 @@ test('lo stato salvato permette di riprendere la partita', () => {
   game.act('comodino', 'apri');
   const saved = JSON.parse(JSON.stringify(game.state));
   const resumed = createGame(level, { state: saved });
-  assert.deepEqual(resumed.look().inventory, [{ id: 'candela', name: 'Mozzicone di candela' }]);
+  assert.equal(resumed.look().objects.some((o) => o.id === 'candela'), true);
   assert.equal(resumed.act('comodino', 'apri').text, 'Il cassetto è già aperto.');
 });
 
