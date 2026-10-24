@@ -129,7 +129,10 @@ export function createOpenAICompatibleClient(options: OpenAICompatibleOptions) {
             'Content-Type': 'application/json',
             ...(options.apiKey ? { Authorization: `Bearer ${options.apiKey}` } : {}),
           },
-          body: JSON.stringify(toOpenAIRequest(request)),
+          body: JSON.stringify({
+            ...toOpenAIRequest(request),
+            ...(options.reasoningEffort ? { reasoning_effort: options.reasoningEffort } : {}),
+          }),
         });
         if (!response.ok) {
           throw new Error(`OpenAI-compatible API request failed with status ${response.status}.`);

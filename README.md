@@ -26,7 +26,7 @@ NVIDIA_API_KEY=...
 NVIDIA_MODEL=deepseek-ai/deepseek-v4.1-flash
 ```
 
-When `AGENT_PROVIDER=openai-compatible`, the harness uses `https://integrate.api.nvidia.com/v1` and `deepseek-ai/deepseek-v4.1-flash` by default. Override them with `NVIDIA_BASE_URL` or `NVIDIA_MODEL`. Keep provider credentials server-side. Run the optional live check with `corepack pnpm test:live:nim`.
+When `AGENT_PROVIDER=openai-compatible`, the harness uses `https://integrate.api.nvidia.com/v1` and `deepseek-ai/deepseek-v4.1-flash` by default. Override them with `NVIDIA_BASE_URL` or `NVIDIA_MODEL`; `NVIDIA_REASONING_EFFORT` sets `reasoning_effort` (for OpenAI `gpt-6-luna` on Chat Completions use `none`, otherwise function tools are rejected). Keep provider credentials server-side. Run the optional live check with `corepack pnpm test:live:nim`.
 
 ## Architettura
 

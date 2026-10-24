@@ -76,9 +76,11 @@ export function createAgent(options: AgentOptions): Agent {
     const baseUrl = openAIOptions?.baseUrl ?? process.env.NVIDIA_BASE_URL
       ?? (process.env.NVIDIA_API_KEY ? 'https://integrate.api.nvidia.com/v1' : undefined);
     const apiKey = openAIOptions?.apiKey ?? process.env.NVIDIA_API_KEY;
+    const reasoningEffort = openAIOptions?.reasoningEffort ?? (process.env.NVIDIA_REASONING_EFFORT || undefined);
     client = createOpenAICompatibleClient({
       ...(baseUrl === undefined ? {} : { baseUrl }),
       ...(apiKey === undefined ? {} : { apiKey }),
+      ...(reasoningEffort === undefined ? {} : { reasoningEffort }),
       ...(openAIOptions?.fetch ? { fetch: openAIOptions.fetch } : {}),
     });
   }

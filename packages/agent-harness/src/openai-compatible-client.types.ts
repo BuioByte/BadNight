@@ -15,6 +15,7 @@ export interface OpenAIChatMessage {
 export interface OpenAIChatCompletionRequest {
   model: string;
   messages: OpenAIChatMessage[];
+  reasoning_effort?: string;
   tools?: {
     type: 'function';
     function: { name: string; description: string; parameters: unknown };
