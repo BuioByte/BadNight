@@ -9,7 +9,7 @@ This is the security baseline for the local hackfest prototype, informed by the 
 - **Input validation:** Validate WebSocket messages from the browser before using player input: JSON only, known `type`, non-empty `text`, at most 64 KiB per message, one turn at a time.
 - **Least privilege:** Expose only the registered game tools to the agent. Validate tool names and arguments in the harness and keep game rules authoritative in the level engine.
 - **Transport and exposure:** Bind the development API to loopback by default. Do not expose the API or API key to an untrusted network.
-- **Data minimization:** Keep session state in memory for the local prototype. Do not persist player input or model conversations to disk.
+- **Data minimization:** Keep session state in memory for the local prototype. Do not persist player input or model conversations to disk, except the local debug log of provider calls (`logs/llm-calls.log`): it is written only with the AI agent, ignored by git, emptied at every engine start, never contains request headers (where keys travel) and redacts keys in URLs; `--llm-log off` disables it.
 - **Dependencies:** Pin dependency ranges in manifests and use the committed pnpm lockfile for reproducible installs.
 - **Errors:** Return a generic API error to the browser; keep credentials and provider request headers out of responses.
 - **Availability:** Bound request body size and agent tool rounds. Sessions are local and disposable; restart clears them.
