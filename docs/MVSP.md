@@ -24,3 +24,7 @@ This is the security baseline for the local hackfest prototype, informed by the 
 ## Harness response retry
 
 The harness treats provider output as untrusted, validates tool names and arguments, and retries empty model responses once with a corrective prompt. It fails with a typed error if the retry is also empty. This change adds no data storage, credentials, or network endpoint.
+
+## Engine and agent harness
+
+The engine loads provider credentials from the server environment or the ignored root `.env`; they never reach the browser. Player text reaches the model only as the harness `Action` input, and the model acts on the game only through the registered game tools, whose results come from the level rules. Tools are bound to the current turn and reject calls after it ends (including a timeout), so a late model response cannot change the state or reply after `ready`. Harness and provider errors reach the browser as a generic message; details are logged on the server console only.

@@ -1,10 +1,15 @@
 // Tool per l'agente AI come funzioni: { name, description, parameters (JSON Schema), handler(args) }.
-// Il registro non dipende dal trasporto: il componente agenti lo userà tramite un adattatore,
+// Il registro non dipende dal trasporto: l'adattatore verso l'agente (ai-agent.js) li registra nel harness,
 // e qui si cambiano firme o si aggiungono tool senza toccare il package level.
 //
 // Oltre ai tool di gioco del livello c'è `respond`, con cui l'agente risponde al giocatore.
+//
+// `signal` è quello del turno: quando il turno è finito (anche per timeout) i tool rifiutano le chiamate,
+// così un agente in ritardo non cambia lo stato né risponde dopo `ready`.
 
 import { toolDefinitions } from '@badnight/level';
+
+const TURN_OVER = { ok: false, error: 'Il turno è finito: questa chiamata è stata ignorata.' };
 
 export const respondDefinition = {
   name: 'respond',
@@ -19,16 +24,17 @@ export const respondDefinition = {
   },
 };
 
-export function createTools(engine) {
+export function createTools(engine, signal) {
+  const active = (handler) => (args) => (signal?.aborted ? TURN_OVER : handler(args));
   return [
-    ...toolDefinitions.map((def) => ({ ...def, handler: (args) => engine.call(def.name, args) })),
+    ...toolDefinitions.map((def) => ({ ...def, handler: active((args) => engine.call(def.name, args)) })),
     {
       ...respondDefinition,
-      handler: ({ text } = {}) => {
+      handler: active(({ text } = {}) => {
         if (typeof text !== 'string' || !text.trim()) return { ok: false, error: 'Manca il parametro "text".' };
         engine.respond(text);
         return { ok: true };
-      },
+      }),
     },
   ];
 }

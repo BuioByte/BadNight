@@ -43,7 +43,7 @@ Un turno di gioco:
 4. a fine turno l'engine invia `ready` e la pagina riattiva l'input.
 
 Il protocollo WebSocket è descritto nel [README dell'engine](packages/engine/README.md#websocket-ws).
-Finché l'agente AI non è collegato, l'engine usa un agente di sviluppo a comandi testuali
+Senza un provider AI configurato, l'engine usa un agente di sviluppo a comandi testuali
 (`act letto guarda_sotto`).
 
 ### Livello e regole
@@ -71,8 +71,12 @@ Il caricamento dei livelli, lo stato della partita e i tool per l'agente sono in
 ### Agente AI
 
 [`packages/agent-harness`](packages/agent-harness/README.md) contiene il registry dei tool e il loop
-del modello. I tool e lo stato della partita restano dell'engine. Il collegamento tra engine e harness
-non è ancora fatto: per ora l'engine usa l'agente di sviluppo.
+del modello. I tool e lo stato della partita restano dell'engine, che a ogni turno li registra nel harness
+e conserva la history della conversazione ([dettagli](packages/engine/README.md#collegare-lagente-ai)).
+
+L'engine usa l'agente AI se è configurato un provider (`GEMINI_API_KEY` o `AGENT_PROVIDER`, anche nel
+file `.env` della radice), altrimenti l'agente di sviluppo. Si sceglie esplicitamente con
+`corepack pnpm start -- --agent ai` o `--agent dev`.
 
 ### Frontend
 
