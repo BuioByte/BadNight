@@ -13,7 +13,7 @@ The application using the harness is responsible for:
 - Keeping the returned `history` with the conversation and passing it to the next turn.
 - Binding handlers to the correct application state or session. A handler returns a JSON-serializable object; the harness validates its arguments and passes its result back to the model.
 
-`runTurn` returns `{ text, history }`. `text` is the player-facing narration. `history` includes the new input, model replies, and tool results and should be treated as opaque conversation state. Create or configure registries so handlers can only access the state intended for that conversation.
+`runTurn` returns `{ text, history }`. `text` is the player-facing narration: when the tool and narration models differ, the narration model rewrites the tool model's answer, keeping its meaning, suggestions and questions; when they are the same model (for example one `NVIDIA_MODEL`), that answer is returned as is, without a second request. The history keeps only the text the player receives, not the draft. `history` includes the new input, model replies, and tool results and should be treated as opaque conversation state. Create or configure registries so handlers can only access the state intended for that conversation.
 
 If either model returns an empty or thinking-only response, the harness retries that model once with a corrective instruction to produce a clear answer. A second empty response raises `AgentResponseError`.
 

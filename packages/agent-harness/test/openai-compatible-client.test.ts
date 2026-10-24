@@ -101,7 +101,7 @@ test('uses NVIDIA NIM environment settings with the OpenAI-compatible provider',
     }
   }
 
-  assert.equal(requests.length, 2);
+  assert.equal(requests.length, 1, 'one model for tools and narration: no second narration pass');
   assert.ok(requests.every(({ url }) => url === 'https://nim.example/v1/chat/completions'));
   assert.ok(requests.every(({ authorization }) => authorization === 'Bearer test-nim-key'));
   assert.ok(requests.every(({ model }) => model === 'deepseek-ai/deepseek-v4.1-flash'));
@@ -136,5 +136,5 @@ test('sends reasoning_effort only when configured, also from NVIDIA_REASONING_EF
       else process.env[key] = previous[key];
     }
   }
-  assert.ok(bodies.slice(2).length === 2 && bodies.slice(2).every((body) => body.reasoning_effort === 'none'));
+  assert.ok(bodies.slice(2).length === 1 && bodies.slice(2).every((body) => body.reasoning_effort === 'none'));
 });
