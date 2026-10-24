@@ -7,7 +7,7 @@ import { loadLevelFile } from '@badnight/level';
 import { createEngine, createHttpServer, devAgent } from '../src/index.js';
 
 const level = await loadLevelFile(
-  fileURLToPath(new URL('../levels/level-0.yaml', import.meta.resolve('@badnight/level'))),
+  fileURLToPath(new URL('fixtures/level.yaml', import.meta.url)),
 );
 
 // Raccoglie i messaggi emessi dall'engine.
@@ -60,10 +60,12 @@ test("se l'agente fallisce o non risponde il turno finisce comunque con ready", 
   }
 });
 
-test('reset ricomincia la partita', async () => {
+test('reset ricomincia la partita e manda state e ready', async () => {
   const engine = createEngine(level, { agent: devAgent });
   await engine.input('act comodino apri');
+  const messages = record(engine);
   assert.equal(engine.reset(), true);
+  assert.deepEqual(messages.map((m) => m.type), ['state', 'ready']);
   const s = engine.snapshot();
   assert.deepEqual(s.history, []);
   assert.ok(!s.view.objects.some((o) => o.id === 'candela'));
@@ -100,7 +102,7 @@ test('WebSocket', async (t) => {
 
   let got = await until('ready');
   assert.deepEqual(got.map((m) => m.type), ['state', 'ready']);
-  assert.equal(got[0].level.title, 'La notte di prova');
+  assert.equal(got[0].level.title, 'Livello di test');
 
   ws.send(JSON.stringify({ type: 'input', text: 'move salone' }));
   got = await until('ready');
@@ -114,8 +116,9 @@ test('WebSocket', async (t) => {
   assert.deepEqual(got.map((m) => m.type), ['error', 'error', 'error']);
 
   ws.send(JSON.stringify({ type: 'reset' }));
-  got = await until('state');
-  assert.deepEqual(got.at(-1).history, []);
+  got = await until('ready');
+  assert.deepEqual(got.map((m) => m.type), ['state', 'ready']);
+  assert.deepEqual(got[0].history, []);
 });
 
 test('shutdown chiude i WebSocket aperti e il server', async () => {
@@ -130,4 +133,16 @@ test('shutdown chiude i WebSocket aperti e il server', async () => {
   const [code] = await closed;
   assert.equal(code, 1001);
   assert.equal(server.listening, false);
+});
+
+test('alla vittoria il finale non è in nessun output: lo mostra il frontend da level.outro', async () => {
+  const engine = createEngine(level, { agent: devAgent });
+  const messages = record(engine);
+  await engine.input('act porta apri');
+  await engine.input('move salone');
+
+  const state = messages.filter((m) => m.type === 'state').at(-1);
+  assert.equal(state.won, true);
+  assert.equal(state.level.outro, level.outro);
+  for (const m of messages.filter((m) => m.type === 'output')) assert.ok(!m.text.includes(level.outro), m.text);
 });

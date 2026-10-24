@@ -101,8 +101,6 @@ function stir() {
   stirTimer = setTimeout(() => artFrame.classList.remove('stirring'), 900);
 }
 
-// L'engine risponde a `reset` solo con `state`, senza `ready`: quello `state` è la risposta e sblocca l'input.
-let resetPending = false;
 let engineReady = false;
 
 const socket = connect(
@@ -113,10 +111,6 @@ const socket = connect(
       story.sync(msg);
       turn.setWon(msg.won);
       if (msg.busy) turn.lock();
-      else if (resetPending) {
-        resetPending = false;
-        story.whenIdle(() => turn.ready());
-      }
     },
     ready() {
       engineReady = true;
@@ -132,23 +126,18 @@ const socket = connect(
     tool(msg) {
       stir();
       illustration.tool(msg);
+      story.add(msg); // non compare nel racconto, ma conta tra i messaggi della history già mostrati
     },
     error(msg) {
       // Con `seq` è un errore del turno (fa parte della history), senza è un messaggio rifiutato.
       // Un rifiuto arriva solo durante un turno: si resta bloccati fino al suo `ready`.
       if (msg.seq) story.add(msg);
-      else {
-        resetPending = false;
-        story.notice(msg.error);
-      }
+      else story.notice(msg.error);
     },
   },
   {
     onOpen: () => turn.lock('il castello si risveglia…'),
-    onClose: () => {
-      resetPending = false;
-      turn.lock('connessione perduta… la candela si riaccende');
-    },
+    onClose: () => turn.lock('connessione perduta… la candela si riaccende'),
   },
 );
 
@@ -177,5 +166,5 @@ text.addEventListener('keydown', (ev) => {
 resetButton.addEventListener('click', () => {
   if (turn.locked) return;
   turn.lock('una nuova notte cala sul castello…');
-  resetPending = socket.send({ type: 'reset' });
+  socket.send({ type: 'reset' });
 });

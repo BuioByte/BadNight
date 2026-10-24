@@ -56,10 +56,7 @@ Il giocatore non può andare avanti finché l'engine non ha risposto:
 - all'invio si blocca prima di spedire il messaggio, così un doppio Enter non manda due turni;
 - dopo una disconnessione resta bloccato finché l'engine, alla riconnessione, non manda `ready`;
 - un `state` con `busy: true` (pagina ricaricata durante un turno) lo tiene bloccato;
-- dopo la vittoria resta attivo solo "Nuova notte".
-
-Eccezione: l'engine risponde a `reset` con il solo `state`, senza `ready`. Per questo lo `state` che arriva
-dopo un nostro `reset` vale come risposta e sblocca l'input.
+- dopo la vittoria resta attivo solo "Nuova notte"; anche il `reset` si conclude con `ready`.
 
 ## Illustrazioni
 
@@ -86,9 +83,7 @@ accesa, porta aperta, cestino vuoto, pianoforte, tavolino) hanno una variante pe
 
 1. un PNG in `public/illustrations/`: `<asset>-<stato>.png` (solo per quello stato) o `<asset>.png`;
 2. il disegno generato dal codice in `src/art/drawings.js` (128×128, primitive e retinatura in `src/art/bitmap.js`);
-3. la zucca ASCII, se la chiave manca o non ha né PNG né disegno. Succede con il livello 0, che non ha chiavi
-   `asset`: per vedere le illustrazioni avvia l'engine, dalla radice del repo, con
-   `node packages/engine/bin/badnight.js --level packages/level/levels/level-1.yaml`.
+3. la zucca ASCII, se la chiave manca o non ha né PNG né disegno (per esempio un livello senza chiavi `asset`).
 
 I PNG servono a sostituire i disegni del codice con immagini fatte a mano o con un generatore. Formato
 consigliato: quadrato, bianco e nero, 128×128 o 256×256. La pagina li ingrandisce a pixel netti.

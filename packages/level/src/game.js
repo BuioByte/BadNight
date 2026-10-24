@@ -167,7 +167,8 @@ export class Game {
       s.room = to;
       if (!s.visited.includes(to)) s.visited.push(to);
       if (to === L.goal) s.won = true;
-      return [L.rooms[to].description, s.won && L.outro].filter(Boolean).join('\n\n');
+      // Il finale (outro) non è nel testo: lo mostra chi presenta la partita, quando changes.won è true.
+      return L.rooms[to].description;
     });
   }
 

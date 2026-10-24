@@ -9,13 +9,14 @@
     "badnight": "./bin/badnight.js"
   },
   "scripts": {
-    "start": "node bin/badnight.js",
-    "test": "node --test"
+    "start": "pnpm --filter @badnight/agent-harness build && node bin/badnight.js",
+    "test": "pnpm --filter @badnight/agent-harness build && node --test"
   },
   "engines": {
     "node": ">=22"
   },
   "dependencies": {
+    "@badnight/agent-harness": "workspace:*",
     "@badnight/level": "workspace:*",
     "ws": "^8.22.0"
   }

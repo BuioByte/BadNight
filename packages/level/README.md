@@ -13,7 +13,7 @@ che importa questo modulo.
 corepack pnpm install   # dalla radice del repo (workspace pnpm)
 cd packages/level
 corepack pnpm test      # test
-corepack pnpm play      # gioca il livello 0 dal terminale, chiamando i tool a mano
+corepack pnpm play      # gioca il livello 1 dal terminale, chiamando i tool a mano
 ```
 
 ## Uso dall'engine
@@ -21,7 +21,7 @@ corepack pnpm play      # gioca il livello 0 dal terminale, chiamando i tool a m
 ```js
 import { loadLevelFile, createGame, toolDefinitions } from '@badnight/level';
 
-const level = await loadLevelFile('levels/level-0.yaml'); // lancia LevelError (con .errors) se non è valido
+const level = await loadLevelFile('levels/level-1.yaml'); // lancia LevelError (con .errors) se non è valido
 const game = createGame(level);                           // oppure createGame(level, { state: salvato })
 
 // toolDefinitions: [{ name, description, parameters }] da passare al modello come function declarations.
@@ -41,7 +41,7 @@ così l'agente può correggersi.
 | `look` | | `room`, `objects`, `ghosts`, `exits` (con `open`), `progress` |
 | `examine` | `target` | `target`: descrizione (incluso lo stato), `state`, `actions` |
 | `act` | `target`, `action` | `text`, `changes` |
-| `move` | `to` | `text`, `changes` (se l'uscita è chiusa: testo `locked` e `changes` vuoto) |
+| `move` | `to` | `text`, `changes` (se l'uscita è chiusa: testo `locked` e `changes` vuoto). Alla vittoria `changes.won` è `true`; il testo non contiene l'`outro`, che mostra chi presenta la partita |
 | `talk` | `ghost` | `ghost` (nome, descrizione, `personality`, `voice`), `knowledge` |
 
 `talk` non genera il dialogo. Restituisce il contesto da passare a Gemma: la personalità del fantasma
@@ -62,7 +62,7 @@ e solo le informazioni (`knowledge`) sbloccate dallo stato attuale.
 
 ## Formato del livello
 
-Esempio completo: [levels/level-0.yaml](levels/level-0.yaml). Gli id sono in minuscolo con `_`.
+Esempio completo: [levels/level-1.yaml](levels/level-1.yaml). Gli id sono in minuscolo con `_`.
 Gli id di oggetti e fantasmi sono unici in tutto il livello, e lo stesso vale per i traguardi.
 Non c'è inventario: gli oggetti restano nella loro stanza. Un oggetto da trovare si dichiara `hidden: true`
 e compare con l'effetto `reveal`.
@@ -71,7 +71,7 @@ e compare con l'effetto `reveal`.
 id: livello_1
 title: La prima notte
 intro: Testo iniziale.
-outro: Testo finale, mostrato quando si entra nella stanza goal.
+outro: Testo finale, da mostrare quando si entra nella stanza goal (non è nel testo di move).
 start: cameretta          # stanza di partenza
 goal: camera_genitori     # entrarci fa vincere
 

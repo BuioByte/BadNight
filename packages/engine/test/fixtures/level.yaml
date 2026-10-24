@@ -1,0 +1,58 @@
+# Livello minimo per i test dell'engine: indipendente dai livelli di gioco in packages/level/levels,
+# che cambiano con gli enigmi. Formato descritto in packages/level/README.md.
+
+id: livello_test
+title: Livello di test
+intro: Ti svegli nella cameretta.
+outro: Sei arrivato nel salone.
+start: cameretta
+goal: salone
+
+rooms:
+  cameretta:
+    name: Cameretta
+    description: Una cameretta buia.
+    milestones:
+      porta_aperta:
+        description: La porta è aperta.
+    exits:
+      salone:
+        description: La porta sul salone.
+        requires: [porta_aperta]
+        locked: La porta è chiusa a chiave.
+    objects:
+      comodino:
+        name: Comodino
+        description: Un comodino con un cassetto.
+        states:
+          chiuso: Il cassetto è chiuso.
+          aperto: Il cassetto è aperto.
+        actions:
+          apri:
+            outcomes:
+              - if: { state: { comodino: aperto } }
+                text: Il cassetto è già aperto.
+              - text: Apri il cassetto e trovi un mozzicone di candela.
+                effects:
+                  - set_state: { comodino: aperto }
+                  - reveal: candela
+      candela:
+        name: Mozzicone di candela
+        description: Una candela consumata.
+        hidden: true
+      letto:
+        name: Letto
+        description: Il tuo letto, con le coperte arruffate.
+      porta:
+        name: Porta
+        description: La porta sul salone.
+        actions:
+          apri:
+            outcomes:
+              - text: La porta si apre.
+                effects:
+                  - complete: porta_aperta
+
+  salone:
+    name: Salone
+    description: Un salone enorme.

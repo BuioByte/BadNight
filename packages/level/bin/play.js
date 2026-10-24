@@ -7,7 +7,7 @@ import { argv, stdin, stdout } from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { createGame, loadLevelFile } from '../src/index.js';
 
-const file = argv[2] ?? fileURLToPath(new URL('../levels/level-0.yaml', import.meta.url));
+const file = argv[2] ?? fileURLToPath(new URL('../levels/level-1.yaml', import.meta.url));
 const game = createGame(await loadLevelFile(file));
 
 const params = { examine: ['target'], act: ['target', 'action'], move: ['to'], talk: ['ghost'] };
@@ -24,7 +24,9 @@ for await (const line of rl) {
   else if (cmd === 'state') console.dir(game.state, { depth: null, colors: true });
   else if (cmd) {
     const args = Object.fromEntries((params[cmd] ?? []).map((p, i) => [p, rest[i]]));
-    console.dir(game.call(cmd, args), { depth: null, colors: true });
+    const result = game.call(cmd, args);
+    console.dir(result, { depth: null, colors: true });
+    if (result.changes?.won && game.level.outro) console.log(`\n${game.level.outro}\n`);
   }
   rl.prompt();
 }
