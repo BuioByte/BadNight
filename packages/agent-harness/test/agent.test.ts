@@ -71,7 +71,11 @@ test('returns a direct model response and appends the turn to history', async ()
   const result = await agent.runTurn({ action: 'What do I see?' });
 
   assert.equal(result.text, 'A cozy room.');
-  assert.deepEqual(result.history.map((item) => item.role), ['user', 'model', 'model']);
+  assert.deepEqual(result.history.map((item) => item.role), ['user', 'model']);
+  assert.equal(result.history[1]?.parts?.[0]?.text, 'A cozy room.', 'the history keeps the narration, not the draft');
+  const narrationRequest = requests[1] as { contents: Content[] };
+  assert.equal(narrationRequest.contents.at(-2)?.parts?.[0]?.text, 'Room details.');
+  assert.match(narrationRequest.contents.at(-1)?.parts?.[0]?.text ?? '', /Keep its meaning and every suggestion or question/);
   const firstRequest = requests[0] as { contents: { parts: { text?: string }[] }[] };
   assert.equal(firstRequest.contents[0]?.parts[0]?.text, 'Action: What do I see?');
 });
@@ -119,10 +123,10 @@ test('carries the earlier story into the next player turn', async () => {
   });
 
   const secondRequest = requests[2] as { contents: { parts: { text?: string }[] }[] };
-  assert.equal(firstTurn.history.length, 3);
+  assert.equal(firstTurn.history.length, 2);
   assert.equal(secondRequest.contents[0]?.parts[0]?.text, 'Action: Listen at the door.');
-  assert.equal(secondRequest.contents[2]?.parts[0]?.text, 'A shadow slips beneath the bedroom door.');
-  assert.equal(secondRequest.contents[3]?.parts[0]?.text,
+  assert.equal(secondRequest.contents[1]?.parts[0]?.text, 'A shadow slips beneath the bedroom door.');
+  assert.equal(secondRequest.contents[2]?.parts[0]?.text,
     'Action: Open the drawer.\nThinking (optional): Maybe the sound came from there.');
   assert.equal(secondTurn.text, 'The old drawer gives a soft creak.');
 });
@@ -329,4 +333,23 @@ test('stops after the configured maximum tool rounds', async () => {
 
   await assert.rejects(agent.runTurn({ action: 'Look.' }), MaxToolRoundsError);
   assert.equal(calls, 1);
+});
+
+test('skips the narration pass when tools and narration use the same model', async () => {
+  const { client, requests } = fakeClient([
+    modelResponse([{ text: 'You cannot find a light. Try the drawer, or ask Pip.' }], 'You cannot find a light. Try the drawer, or ask Pip.'),
+  ]);
+  const agent = createAgent({
+    client,
+    systemInstruction: 'Be gentle.',
+    registry: createToolRegistry(),
+    toolModel: 'one-model',
+    narrationModel: 'one-model',
+  });
+
+  const result = await agent.runTurn({ action: 'Turn on the light.' });
+
+  assert.equal(requests.length, 1);
+  assert.equal(result.text, 'You cannot find a light. Try the drawer, or ask Pip.');
+  assert.deepEqual(result.history.map((item) => item.role), ['user', 'model']);
 });

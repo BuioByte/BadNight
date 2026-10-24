@@ -152,3 +152,22 @@ test('senza chiave API la configurazione fallisce subito', () => {
     if (saved !== undefined) process.env.GEMINI_API_KEY = saved;
   }
 });
+
+test('al modello non arrivano gli asset, al frontend sì', async () => {
+  const { client, messages, engine } = setup([
+    call('look', {}),
+    call('act', { target: 'comodino', action: 'apri' }),
+    say('Fatto.'),
+    say('Apri il cassetto.'),
+  ]);
+  await engine.input('apro il comodino');
+
+  const toModel = client.requests.at(-1).contents.flatMap((c) => c.parts).filter((p) => p.functionResponse);
+  assert.equal(toModel.length, 2);
+  assert.doesNotMatch(JSON.stringify(toModel), /"asset"/);
+  assert.equal(toModel[0].functionResponse.response.room.id, 'cameretta');
+
+  const tools = messages.filter((m) => m.type === 'tool');
+  assert.equal(tools[0].result.room.asset, 'room_cameretta');
+  assert.equal(tools[1].result.changes.states[0].asset, 'object_comodino');
+});

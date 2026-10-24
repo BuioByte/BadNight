@@ -23,7 +23,7 @@ export function createAiAgent(level, { systemInstruction = systemInstructionFor(
   async function agent(text, tools, { signal } = {}) {
     const registry = createToolRegistry();
     for (const { name, description, parameters, handler } of tools) {
-      if (name !== 'respond') registry.register({ name, description, ...(parameters && { parameters }) }, handler);
+      if (name !== 'respond') registry.register({ name, description, ...(parameters && { parameters }) }, (args) => withoutAssets(handler(args)));
     }
     const harness = createAgent({ ...options, systemInstruction, registry });
 
@@ -42,6 +42,14 @@ export function createAiAgent(level, { systemInstruction = systemInstructionFor(
     history = [];
   };
   return agent;
+}
+
+// Gli `asset` (id delle illustrazioni) servono al frontend, non al modello: si tolgono dalla copia
+// del risultato che va al harness. Il messaggio `tool` per il frontend li conserva.
+function withoutAssets(value) {
+  if (Array.isArray(value)) return value.map(withoutAssets);
+  if (value === null || typeof value !== 'object') return value;
+  return Object.fromEntries(Object.entries(value).filter(([k]) => k !== 'asset').map(([k, v]) => [k, withoutAssets(v)]));
 }
 
 export function systemInstructionFor(level) {

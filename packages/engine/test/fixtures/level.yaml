@@ -11,6 +11,7 @@ goal: salone
 rooms:
   cameretta:
     name: Cameretta
+    asset: room_cameretta
     description: Una cameretta buia.
     milestones:
       porta_aperta:
@@ -23,6 +24,7 @@ rooms:
     objects:
       comodino:
         name: Comodino
+        asset: object_comodino
         description: Un comodino con un cassetto.
         states:
           chiuso: Il cassetto è chiuso.

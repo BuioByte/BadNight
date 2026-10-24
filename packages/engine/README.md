@@ -92,7 +92,8 @@ Se l'agente lancia un errore, al giocatore arriva `e.message` come `error`, e l'
 
 **`createAiAgent(level, options)`** collega l'engine al [harness AI](../agent-harness/README.md):
 
-- a ogni turno registra nel registry del harness i tool di gioco (non `respond`) e chiama `runTurn`;
+- a ogni turno registra nel registry del harness i tool di gioco (non `respond`) e chiama `runTurn`; al modello
+  i risultati arrivano senza i campi `asset`, che servono solo al frontend (il messaggio `tool` li conserva);
   la narrazione restituita arriva al giocatore con `respond`;
 - conserva la history della conversazione tra i turni e la azzera con `reset()`;
 - se il turno è scaduto ne scarta il risultato;
