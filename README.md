@@ -71,7 +71,19 @@ Il caricamento dei livelli, lo stato della partita e i tool per l'agente sono in
 ### Agente AI
 
 [`packages/agent-harness`](packages/agent-harness/README.md) contiene il registry dei tool e il loop
-del modello. I tool e lo stato della partita restano dell'engine, che li registra nel harness.
+del modello. I tool e lo stato della partita restano dell'engine. Il collegamento tra engine e harness
+non è ancora fatto: per ora l'engine usa l'agente di sviluppo.
+
+### Frontend
+
+La pagina in cui il giocatore scrive le azioni è in [`frontend`](frontend/README.md): un progetto Vite
+a sé, fuori dal workspace pnpm, con il suo `package.json` e il suo lockfile npm. Non importa codice
+dell'engine: parla con l'engine solo attraverso il WebSocket `/ws`, e il giocatore può scrivere solo
+dopo che l'engine ha risposto (`ready`).
+
+In sviluppo gira sul server di Vite, che manda `/ws` in proxy all'engine. Con `npm run build:engine`
+si compila direttamente in `packages/engine/public/`, al posto della pagina provvisoria, e la serve
+l'engine stesso.
 
 ## Provider AI
 
@@ -91,8 +103,8 @@ La chiave è facoltativa per server locali che non richiedono autenticazione. `O
 
 ## Struttura
 
-- `packages/engine/`: server CLI, partita, WebSocket per il frontend, pagina web (`public/`).
-- `frontend/`: client Vite JavaScript e asset audio della pagina di gioco.
+- `frontend/`: pagina web del gioco (Vite, progetto npm separato).
+- `packages/engine/`: server CLI, partita, WebSocket per il frontend, pagina web servita (`public/`).
 - `packages/level/`: livello YAML, regole della partita e tool `look`, `examine`, `act`, `move`, `talk`.
 - `packages/agent-harness/`: registry dei tool e loop Gemini/OpenAI-compatible.
 - `docs/MVSP.md`: baseline di sicurezza minima del prototipo.
@@ -107,4 +119,14 @@ corepack pnpm test           # test di level, engine e harness
 corepack pnpm build          # build TypeScript del harness
 corepack pnpm test:live      # test live con Gemini AI Studio e GEMINI_API_KEY
 corepack pnpm test:live:nim  # test live NVIDIA NIM con NVIDIA_API_KEY
+```
+
+Frontend, con l'engine già avviato:
+
+```sh
+cd frontend
+npm install
+npm run dev                  # http://localhost:5173, /ws in proxy all'engine
+npm run build                # build in frontend/dist
+npm run build:engine         # build in packages/engine/public, servita dall'engine
 ```

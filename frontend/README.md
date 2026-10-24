@@ -4,14 +4,14 @@ La pagina web in cui il giocatore scrive le azioni in linguaggio naturale. Il gi
 l'engine ([`packages/engine`](../packages/engine/README.md)): la pagina invia il testo e mostra quello che
 l'engine le notifica sul WebSocket `/ws`.
 
-Ha una **pipeline di build separata**: è un progetto a sé, fuori dai workspace npm della radice, con il suo
+Ha una **pipeline di build separata**: è un progetto a sé, fuori dal workspace pnpm della radice, con il suo
 `package.json`, il suo lockfile e i suoi comandi. Non importa codice dell'engine. Usa [Vite](https://vite.dev)
 come server di sviluppo e per la build.
 
 ```sh
-# 1. l'engine, dalla radice del repo
-npm install
-npm start                 # http://127.0.0.1:3000
+# 1. l'engine, dalla radice del repo (pnpm via Corepack)
+corepack pnpm install
+corepack pnpm start       # http://127.0.0.1:3000
 
 # 2. il frontend, in un altro terminale
 cd frontend

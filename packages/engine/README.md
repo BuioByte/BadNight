@@ -29,7 +29,7 @@ Se la porta è occupata l'engine prova le successive.
 | `src/dev-agent.js` | agente di sviluppo a comandi testuali, finché non c'è l'agente AI |
 | `src/http.js` | server HTTP: file statici da `public/` |
 | `src/ws.js` | WebSocket su `/ws` |
-| `public/` | pagina web (per ora una pagina provvisoria) |
+| `public/` | pagina web servita: per ora una pagina provvisoria; il frontend ([`frontend`](../../frontend/README.md)) può compilarsi qui con `npm run build:engine` |
 
 ## Il turno
 
