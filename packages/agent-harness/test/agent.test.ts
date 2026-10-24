@@ -121,6 +121,44 @@ test('runs a tool and returns the model response after its result', async () => 
   assert.equal(firstRequest.config.tools[0]?.functionDeclarations[0]?.name, 'look');
 });
 
+test('lets the model recover from a game tool error result', async () => {
+  const actTool: AgentTool = {
+    name: 'act',
+    description: 'Try an action on a room object.',
+    parameters: {
+      type: 'object',
+      properties: { target: { type: 'string' }, action: { type: 'string' } },
+      required: ['target', 'action'],
+    },
+  };
+  const { client } = fakeClient([
+    modelResponse([{ functionCall: { name: 'act', args: { target: 'door', action: 'open' }, id: 'act-1' } }]),
+    modelResponse([{ functionCall: { name: 'look', args: {}, id: 'look-1' } }]),
+    modelResponse([{ text: 'The door stays shut. From the hallway, a small bell rings once.' }],
+      'The door stays shut. From the hallway, a small bell rings once.'),
+  ]);
+  const calls: string[] = [];
+  const agent = createAgent({
+    client,
+    systemInstruction: 'Keep the story spooky.',
+    tools: [actTool, lookTool],
+    executeTool: (name) => {
+      calls.push(name);
+      return name === 'act'
+        ? { ok: false, error: 'The door is locked.' }
+        : { ok: true, room: 'Cameretta', exits: ['salone'] };
+    },
+  });
+
+  const result = await agent.runTurn({ action: 'Open the door.' });
+
+  assert.deepEqual(calls, ['act', 'look']);
+  assert.deepEqual(result.history[2]?.parts, [
+    { functionResponse: { name: 'act', id: 'act-1', response: { ok: false, error: 'The door is locked.' } } },
+  ]);
+  assert.equal(result.text, 'The door stays shut. From the hallway, a small bell rings once.');
+});
+
 test('demo: sends action and optional thinking through a tool call to narration', async (t) => {
   const action = 'Look around.';
   const thinking = 'Maybe I can find a light.';
