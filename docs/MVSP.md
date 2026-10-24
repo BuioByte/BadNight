@@ -24,3 +24,10 @@ This is the security baseline for the local hackfest prototype, informed by the 
 ## Harness response retry
 
 The harness treats provider output as untrusted, validates tool names and arguments, and retries empty model responses once with a corrective prompt. It fails with a typed error if the retry is also empty. This change adds no data storage, credentials, or network endpoint.
+
+## Level merge compatibility
+
+- Validate entity references, conditions, effects, and asset identifiers when loading a level. Reject unknown references and unsupported keys rather than applying partial rules.
+- Keep game state authoritative: tools may examine only visible entities in the current room. Objects remain in their rooms; progression uses entity states and milestones. Hidden entities remain unavailable until revealed.
+- Assets are logical identifiers, not URLs or filesystem paths; resolving them must not grant tools file or network access.
+- This compatibility repair introduces no credentials, persistence, authentication, or network endpoints; related controls remain unchanged and production controls remain out of scope for the local prototype.
