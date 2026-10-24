@@ -1,12 +1,19 @@
 # @badnight/agent-harness
 
-Gemma 4 function-calling loop for the Node.js game engine. The harness takes tool declarations and an executor from its caller; game tools remain in `@badnight/level`.
+Gemma 4 function-calling loop for the Node.js game engine. Callers register each JSON Schema tool definition with its handler; game tools remain in `@badnight/level`.
 
 ```ts
+import { createAgent, createToolRegistry } from '@badnight/agent-harness';
+import { toolDefinitions } from '@badnight/level';
+
+const registry = createToolRegistry();
+for (const tool of toolDefinitions) {
+  registry.register(tool, (args) => game.call(tool.name, args));
+}
+
 const agent = createAgent({
   systemInstruction: 'Use a spooky, suspenseful style.',
-  tools: toolDefinitions,
-  executeTool: (name, args) => game.call(name, args),
+  registry,
 });
 
 const turn = await agent.runTurn({

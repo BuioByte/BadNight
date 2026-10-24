@@ -7,7 +7,8 @@ import {
   UnknownToolError,
   createAgent,
 } from '../src/agent.js';
-import type { AgentTool } from '../src/agent.types.js';
+import { createToolRegistry } from '../src/tool-registry.js';
+import type { AgentTool, ToolExecutor } from '../src/agent.types.js';
 
 function modelResponse(parts: Content['parts'], text?: string): GenerateContentResponse {
   return {
@@ -39,9 +40,30 @@ const lookTool: AgentTool = {
   parameters: { type: 'object', properties: {}, additionalProperties: false },
 };
 
+function registryFor(tools: AgentTool[], execute: ToolExecutor) {
+  const registry = createToolRegistry();
+  for (const tool of tools) registry.register(tool, (args) => execute(tool.name, args));
+  return registry;
+}
+
+test('registers tool definitions and dispatches calls by name', async () => {
+  const registry = createToolRegistry();
+  registry.register(lookTool, (args) => ({ room: args.room }));
+
+  assert.deepEqual(registry.definitions(), [lookTool]);
+  assert.deepEqual(await registry.execute('look', { room: 'bedroom' }), { room: 'bedroom' });
+});
+
+test('rejects duplicate tool names', () => {
+  const registry = createToolRegistry();
+  registry.register(lookTool, () => ({}));
+
+  assert.throws(() => registry.register(lookTool, () => ({})), /already registered/);
+});
+
 test('returns a direct model response and appends the turn to history', async () => {
   const { client, requests } = fakeClient([modelResponse([{ text: 'A cozy room.' }], 'A cozy room.')]);
-  const agent = createAgent({ client, systemInstruction: 'Be gentle.', tools: [], executeTool: () => ({}) });
+  const agent = createAgent({ client, systemInstruction: 'Be gentle.', registry: createToolRegistry() });
 
   const result = await agent.runTurn({ action: 'What do I see?' });
 
@@ -53,7 +75,7 @@ test('returns a direct model response and appends the turn to history', async ()
 
 test('rejects a blank action before contacting the model', async () => {
   const { client, requests } = fakeClient([]);
-  const agent = createAgent({ client, systemInstruction: 'Be gentle.', tools: [], executeTool: () => ({}) });
+  const agent = createAgent({ client, systemInstruction: 'Be gentle.', registry: createToolRegistry() });
 
   await assert.rejects(agent.runTurn({ action: '  ' }), /action must not be empty/);
   assert.equal(requests.length, 0);
@@ -64,7 +86,7 @@ test('carries the earlier story into the next player turn', async () => {
     modelResponse([{ text: 'A shadow slips beneath the bedroom door.' }], 'A shadow slips beneath the bedroom door.'),
     modelResponse([{ text: 'The old drawer gives a soft creak.' }], 'The old drawer gives a soft creak.'),
   ]);
-  const agent = createAgent({ client, systemInstruction: 'Keep the story spooky.', tools: [], executeTool: () => ({}) });
+  const agent = createAgent({ client, systemInstruction: 'Keep the story spooky.', registry: createToolRegistry() });
 
   const firstTurn = await agent.runTurn({ action: 'Listen at the door.' });
   const secondTurn = await agent.runTurn({
@@ -91,11 +113,10 @@ test('runs a tool and returns the model response after its result', async () => 
   const agent = createAgent({
     client,
     systemInstruction: 'Be gentle.',
-    tools: [lookTool],
-    executeTool: (name) => {
+    registry: registryFor([lookTool], (name) => {
       calls.push(name);
       return { room: 'bedroom' };
-    },
+    }),
   });
 
   const result = await agent.runTurn({ action: 'Look around.' });
@@ -141,13 +162,12 @@ test('lets the model recover from a game tool error result', async () => {
   const agent = createAgent({
     client,
     systemInstruction: 'Keep the story spooky.',
-    tools: [actTool, lookTool],
-    executeTool: (name) => {
+    registry: registryFor([actTool, lookTool], (name) => {
       calls.push(name);
       return name === 'act'
         ? { ok: false, error: 'The door is locked.' }
         : { ok: true, room: 'Cameretta', exits: ['salone'] };
-    },
+    }),
   });
 
   const result = await agent.runTurn({ action: 'Open the door.' });
@@ -172,8 +192,7 @@ test('demo: sends action and optional thinking through a tool call to narration'
   const agent = createAgent({
     client,
     systemInstruction: 'Use a spooky, suspenseful style.',
-    tools: [lookTool],
-    executeTool: () => room,
+    registry: registryFor([lookTool], () => room),
   });
 
   const result = await agent.runTurn({ action, thinking });
@@ -202,11 +221,10 @@ test('executes multiple calls from one model response in order', async () => {
   const agent = createAgent({
     client,
     systemInstruction: 'Be gentle.',
-    tools: [lookTool],
-    executeTool: (_name, args) => {
+    registry: registryFor([lookTool], (_name, args) => {
       ids.push(String(args.id ?? ids.length));
       return { ok: true };
-    },
+    }),
   });
 
   const result = await agent.runTurn({ action: 'Look twice.' });
@@ -222,11 +240,10 @@ test('rejects unknown tools before execution', async () => {
   const agent = createAgent({
     client,
     systemInstruction: 'Be gentle.',
-    tools: [lookTool],
-    executeTool: () => {
+    registry: registryFor([lookTool], () => {
       executed = true;
       return {};
-    },
+    }),
   });
 
   await assert.rejects(agent.runTurn({ action: 'Run a tool.' }), UnknownToolError);
@@ -240,12 +257,11 @@ test('validates arguments against the injected JSON Schema', async () => {
   const agent = createAgent({
     client,
     systemInstruction: 'Be gentle.',
-    tools: [{ name: 'examine', description: 'Inspect something.', parameters: {
+    registry: registryFor([{ name: 'examine', description: 'Inspect something.', parameters: {
       type: 'object',
       properties: { target: { type: 'string' } },
       required: ['target'],
-    } }],
-    executeTool: () => ({}),
+    } }], () => ({})),
   });
 
   await assert.rejects(agent.runTurn({ action: 'Examine it.' }), ToolArgumentsError);
@@ -256,10 +272,9 @@ test('surfaces tool executor failures', async () => {
   const agent = createAgent({
     client,
     systemInstruction: 'Be gentle.',
-    tools: [lookTool],
-    executeTool: () => {
+    registry: registryFor([lookTool], () => {
       throw new Error('game state unavailable');
-    },
+    }),
   });
 
   await assert.rejects(agent.runTurn({ action: 'Look.' }), /game state unavailable/);
@@ -274,11 +289,10 @@ test('stops after the configured maximum tool rounds', async () => {
   const agent = createAgent({
     client,
     systemInstruction: 'Be gentle.',
-    tools: [lookTool],
-    executeTool: () => {
+    registry: registryFor([lookTool], () => {
       calls += 1;
       return {};
-    },
+    }),
     maxToolRounds: 1,
   });
 

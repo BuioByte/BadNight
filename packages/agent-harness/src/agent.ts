@@ -46,17 +46,15 @@ export function createAgent(options: AgentOptions): Agent {
   }
 
   const ajv = new Ajv({ allErrors: true, strict: false });
+  const definitions = options.registry.definitions();
   const tools = new Map(
-    options.tools.map((tool) => {
+    definitions.map((tool) => {
       const schema = tool.parameters ?? { type: 'object', additionalProperties: false };
       return [tool.name, { ...tool, validate: ajv.compile(schema) }] as const;
     }),
   );
-  if (tools.size !== options.tools.length) {
-    throw new Error('Tool names must be unique.');
-  }
 
-  const declarations: FunctionDeclaration[] = options.tools.map((tool) => ({
+  const declarations: FunctionDeclaration[] = definitions.map((tool) => ({
     name: tool.name,
     description: tool.description,
     ...(tool.parameters === undefined ? {} : { parametersJsonSchema: tool.parameters }),
@@ -119,7 +117,7 @@ export function createAgent(options: AgentOptions): Agent {
             throw new ToolArgumentsError(call.name, ajv.errorsText(tool.validate.errors));
           }
 
-          const result = await options.executeTool(call.name, args as Record<string, unknown>);
+          const result = await options.registry.execute(call.name, args as Record<string, unknown>);
           functionResponses.push({
             functionResponse: {
               name: call.name,
