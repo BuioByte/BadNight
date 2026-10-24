@@ -1,6 +1,7 @@
 import React, { FormEvent, KeyboardEvent, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import type { CreateGameResponse, ErrorResponse, GameView, StoryMessage, TurnRequest, TurnResponse } from './api.types.js';
+import { enableSound, playSound } from './sound.js';
 import './style.css';
 
 const roomPath = ['cameretta', 'salone', 'camera_genitori'];
@@ -20,7 +21,11 @@ function App() {
   const [thinking, setThinking] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [soundEnabled, setSoundEnabled] = useState(false);
   const storyEnd = useRef<HTMLDivElement>(null);
+  const soundOn = useRef(false);
+  const previousRoom = useRef('');
+  const previousWin = useRef(false);
 
   useEffect(() => storyEnd.current?.scrollIntoView({ behavior: 'smooth' }), [messages]);
 
@@ -32,6 +37,9 @@ function App() {
       setSessionId(game.sessionId);
       setView(game.state);
       setMessages([{ role: 'narrator', text: game.intro }]);
+      previousRoom.current = game.state.room.id;
+      previousWin.current = Boolean(game.state.won);
+      if (soundOn.current) playSound('start');
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Non riesco ad aprire la porta.');
     } finally {
@@ -65,6 +73,13 @@ function App() {
       });
       setView(result.state);
       setMessages((current) => [...current, { role: 'narrator', text: result.text }]);
+      if (soundOn.current) {
+        if (result.state.won && !previousWin.current) playSound('win');
+        else if (result.state.room.id !== previousRoom.current) playSound('room');
+        else playSound('step');
+      }
+      previousRoom.current = result.state.room.id;
+      previousWin.current = Boolean(result.state.won);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Qualcosa si muove nel buio. Riprova.');
     } finally {
@@ -95,6 +110,23 @@ function App() {
         <div className="topbar-note"><span className="status-dot" /> UNA STORIA DA GIOCARE</div>
         <button className="reset-button" type="button" onClick={() => void startGame()} disabled={busy}>
           ↺ <span>Ricomincia</span>
+        </button>
+        <button
+          className="sound-button"
+          type="button"
+          aria-pressed={soundEnabled}
+          onClick={async () => {
+            if (soundOn.current) {
+              soundOn.current = false;
+              setSoundEnabled(false);
+            } else {
+              const enabled = await enableSound();
+              soundOn.current = enabled;
+              setSoundEnabled(enabled);
+            }
+          }}
+        >
+          {soundEnabled ? '♫ Suoni attivi' : '♫ Attiva i suoni'}
         </button>
       </header>
 

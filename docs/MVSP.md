@@ -24,3 +24,10 @@ This is the security baseline for the local hackfest prototype, informed by the 
 ## Harness response retry
 
 The harness treats provider output as untrusted, validates tool names and arguments, and retries empty model responses once with a corrective prompt. It fails with a typed error if the retry is also empty. This change adds no data storage, credentials, or network endpoint.
+
+## Browser sound effects
+
+- **User control:** Sound effects are opt-in through the visible sound button. The browser audio context is created only after the player enables sound, and the button can silence later effects.
+- **Data and permissions:** Sound is synthesized locally with Web Audio. No audio is recorded, uploaded, or fetched; no new permission or API boundary is introduced.
+- **Input validation:** Not applicable; the effects use fixed local tones and do not consume player text or other untrusted input.
+- **Secrets and least privilege:** Not applicable; the feature uses no credentials, network access, or external service.
