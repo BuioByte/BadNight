@@ -1,6 +1,6 @@
 # @badnight/agent-harness
 
-Gemma 4 function-calling loop for the Node.js game engine. Callers register each JSON Schema tool definition with its handler; game tools remain in `@badnight/level`.
+Gemma 4 agent harness for the Node.js game engine. The 31B Dense model handles thinking and registered JSON Schema tool calls; the 26B A4B MoE model turns the resulting game state into player-facing narration. Callers register tool definitions with handlers; game tools remain in `@badnight/level`.
 
 ```ts
 import { createAgent, createToolRegistry } from '@badnight/agent-harness';
@@ -27,5 +27,8 @@ Set `GEMINI_API_KEY` in the backend environment. Callers keep `turn.history` and
 ```sh
 pnpm install
 pnpm test
+pnpm test:live
 pnpm build
 ```
+
+`pnpm test:live` makes a real Gemma 4 API request and requires `GEMINI_API_KEY` in the environment or the repository-root `.env` file. It uses the registry with a tiny in-test `look` handler; the normal test command stays offline.

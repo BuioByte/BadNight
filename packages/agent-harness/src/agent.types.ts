@@ -27,7 +27,8 @@ export interface AgentOptions {
   registry: ToolRegistry;
   apiKey?: string;
   client?: GoogleGenAI;
-  model?: string;
+  toolModel?: string;
+  narrationModel?: string;
   maxToolRounds?: number;
 }
 
