@@ -88,7 +88,7 @@ def render_typewriter_click(path, resonance, seed):
         body = math.sin(2.0 * math.pi * resonance * time) * math.exp(-time / 0.022)
         frame = math.sin(2.0 * math.pi * (resonance * 1.7) * time) * math.exp(-time / 0.009)
         tick = math.sin(2.0 * math.pi * 2400 * time) * math.exp(-time / 0.0025)
-        value = (previous_noise * 0.23 + body * 0.26 + frame * 0.13 + tick * 0.2) * 1.5
+        value = previous_noise * 0.23 + body * 0.26 + frame * 0.13 + tick * 0.2
         encoded = round(max(-1.0, min(1.0, value)) * 32767)
         frames.extend(struct.pack('<hh', encoded, encoded))
     with wave.open(str(path), 'wb') as click:

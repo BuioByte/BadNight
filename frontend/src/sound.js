@@ -1,7 +1,7 @@
 const soundtrack = new Audio('/sounds/badnight-theme.wav');
 const typingSounds = [new Audio('/sounds/type-key-1.wav'), new Audio('/sounds/type-key-2.wav')];
 const narrationSounds = [1, 2, 3].map((n) => new Audio(`/sounds/typewriter-${n}.wav`));
-const volumes = { master: 1, music: 0.2, typing: 0.16, narration: 0.3 };
+const volumes = { master: 1, music: 0.2, typing: 0.16, narration: 0.12 };
 let audioEnabled = true;
 let nextTypingSound = 0;
 let nextNarrationSound = 0;

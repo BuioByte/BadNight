@@ -36,7 +36,7 @@ export function createStory(el, { typeSound = () => {} } = {}) {
       const character = characters[index++];
       typed += character;
       visual.textContent = typed;
-      if (!/\s/.test(character)) typeSound();
+      if (!/\s/.test(character) && index % 3 === 0) typeSound();
       el.scrollTop = el.scrollHeight;
 
       if (index === characters.length) {

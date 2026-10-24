@@ -29,5 +29,5 @@ The harness treats provider output as untrusted, validates tool names and argume
 
 - **User control:** The welcome screen lets the player enable or disable audio before starting. The browser mixer has separate master, music, player-key, and narration-key levels; browsers that block autoplay start playback after the first user interaction.
 - **Data and permissions:** Audio uses local static assets. No audio is recorded, uploaded, or fetched from an external service; no new permission or API boundary is introduced.
-- **Input validation:** Player typing sounds respond to ordinary character key events; narration typing sounds respond only to displayed characters. Both use fixed local assets, and player text is not read or transmitted by the sound system.
+- **Input validation:** Player typing sounds respond to ordinary character key events; narration typing sounds use a sparse cadence over displayed characters. Both use fixed local assets, and player text is not read or transmitted by the sound system.
 - **Secrets and least privilege:** Not applicable; the feature uses no credentials, network access, or external service.
