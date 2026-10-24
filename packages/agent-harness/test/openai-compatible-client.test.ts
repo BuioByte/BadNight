@@ -106,3 +106,35 @@ test('uses NVIDIA NIM environment settings with the OpenAI-compatible provider',
   assert.ok(requests.every(({ authorization }) => authorization === 'Bearer test-nim-key'));
   assert.ok(requests.every(({ model }) => model === 'deepseek-ai/deepseek-v4.1-flash'));
 });
+
+test('sends reasoning_effort only when configured, also from NVIDIA_REASONING_EFFORT', async () => {
+  const bodies: Record<string, unknown>[] = [];
+  const fetch = async (_input: unknown, init?: RequestInit) => {
+    bodies.push(JSON.parse(String(init?.body)) as Record<string, unknown>);
+    return new Response(JSON.stringify({ choices: [{ message: { content: 'Ok.' } }] }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  };
+
+  await createOpenAICompatibleClient({ fetch }).models.generateContent(request);
+  await createOpenAICompatibleClient({ fetch, reasoningEffort: 'none' }).models.generateContent(request);
+  assert.equal('reasoning_effort' in (bodies[0] ?? {}), false);
+  assert.equal(bodies[1]?.reasoning_effort, 'none');
+
+  const keys = ['AGENT_PROVIDER', 'NVIDIA_MODEL', 'NVIDIA_REASONING_EFFORT'] as const;
+  const previous = Object.fromEntries(keys.map((key) => [key, process.env[key]]));
+  process.env.AGENT_PROVIDER = 'openai-compatible';
+  process.env.NVIDIA_MODEL = 'gpt-6-luna';
+  process.env.NVIDIA_REASONING_EFFORT = 'none';
+  try {
+    const agent = createAgent({ systemInstruction: 'Narrate briefly.', registry: createToolRegistry(), openAICompatible: { fetch } });
+    await agent.runTurn({ action: 'Listen.' });
+  } finally {
+    for (const key of keys) {
+      if (previous[key] === undefined) delete process.env[key];
+      else process.env[key] = previous[key];
+    }
+  }
+  assert.ok(bodies.slice(2).length === 2 && bodies.slice(2).every((body) => body.reasoning_effort === 'none'));
+});

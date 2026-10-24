@@ -45,6 +45,9 @@ export interface OpenAICompatibleOptions {
   apiKey?: string;
   toolModel?: string;
   narrationModel?: string;
+  // Sent as reasoning_effort (for example 'none': some models accept function tools on
+  // Chat Completions only without reasoning). Omitted when unset.
+  reasoningEffort?: string;
   fetch?: typeof fetch;
 }
 
