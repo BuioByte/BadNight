@@ -98,8 +98,11 @@ Se l'agente lancia un errore, al giocatore arriva `e.message` come `error`, e l'
 - se il turno è scaduto ne scarta il risultato;
 - se il harness fallisce (provider, argomenti dei tool non validi, troppi round…) al giocatore arriva
   un messaggio semplice in italiano (`AI_ERROR_MESSAGE`); l'errore del harness è in `e.cause`;
-- il prompt di sistema (`systemInstructionFor(level)`) chiede risposte in italiano, l'uso dei tool come
-  unica fonte di verità e fantasmi che rivelano solo ciò che `talk` restituisce in `knowledge`;
+- il prompt di sistema (`systemInstructionFor(level)`) chiede risposte in italiano, pochi tool per messaggio
+  (di regola al massimo due: ogni chiamata è lenta e il giocatore non la vede) e i tool come unica fonte di
+  verità. Se la richiesta è chiara il modello agisce subito; se è vaga usa al massimo `look` e risponde con un
+  suggerimento (cosa c'è intorno, da dove cominciare) invece di esplorare al posto del giocatore. Non rivela le
+  soluzioni, e i fantasmi dicono solo ciò che `talk` restituisce in `knowledge`;
 - `options` sono quelle di `createAgent` del harness (provider, chiave, client, modelli, `maxToolRounds`),
   più `systemInstruction` per sostituire il prompt. La configurazione si verifica subito: senza chiave
   `createAiAgent` lancia un errore.
