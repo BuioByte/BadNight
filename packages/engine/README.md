@@ -7,9 +7,10 @@ Prototipo: una sola partita in memoria, un solo giocatore, nessuna autenticazion
 Regole e stato della partita sono nel package [`level`](../level/README.md).
 
 ```sh
-npm install          # dalla radice del repo (npm workspaces)
-npm start            # = badnight, livello 0 su http://127.0.0.1:3000
-npm test
+corepack pnpm install    # dalla radice del repo (workspace pnpm)
+corepack pnpm start      # = badnight, livello 0 su http://127.0.0.1:3000
+corepack pnpm start -- --port 3100
+corepack pnpm --filter @badnight/engine test
 ```
 
 ```
