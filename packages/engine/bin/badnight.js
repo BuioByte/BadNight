@@ -8,6 +8,7 @@ import { LevelError, loadLevelFile } from '@badnight/level';
 import { createEngine, createHttpServer, devAgent } from '../src/index.js';
 
 const PORT_ATTEMPTS = 10;
+const SHUTDOWN_TIMEOUT = 3000;
 
 // `pnpm start -- --port 3100` passa anche il `--`: lo ignoriamo.
 const args = process.argv.slice(2);
@@ -67,4 +68,15 @@ for (let i = 1; ; i++) {
 const host = opts.host.includes(':') ? `[${opts.host}]` : opts.host;
 console.log(`\n  BadNight — ${level.title}\n\n  Apri http://${host}:${port}\n`);
 
-process.on('SIGINT', () => server.close(() => process.exit(0)));
+// Ctrl+C: chiude WebSocket e server. Se qualcosa resta appeso esce comunque dopo SHUTDOWN_TIMEOUT;
+// un secondo Ctrl+C esce subito.
+let stopping = false;
+function stop() {
+  if (stopping) process.exit(1);
+  stopping = true;
+  console.log('\n  Arresto in corso…');
+  setTimeout(() => process.exit(1), SHUTDOWN_TIMEOUT).unref();
+  server.shutdown().then(() => process.exit(0));
+}
+process.on('SIGINT', stop);
+process.on('SIGTERM', stop);
