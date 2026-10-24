@@ -1,0 +1,19 @@
+{
+  "name": "@badnight/frontend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Pagina web di BadNight: il giocatore scrive le azioni, l'engine risponde via WebSocket",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build:engine": "vite build --outDir ../packages/engine/public --emptyOutDir",
+    "preview": "vite preview"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "vite": "^7.3.7"
+  }
+}

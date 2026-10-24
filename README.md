@@ -68,6 +68,17 @@ Pagina web servita dall'engine e collegata via WebSocket: il giocatore scrive te
 - la chat con i fantasmi e con l'agente
 - l'atmosfera: notte, buio, luce di candela, suoni
 
+Il frontend è in [`frontend`](frontend/README.md), con una pipeline di build separata (Vite): ha il suo
+`package.json` ed è fuori dai workspace npm. In sviluppo gira con `npm run dev` e il WebSocket va in proxy
+all'engine. Il giocatore può scrivere solo dopo che l'engine ha risposto (`ready`).
+
+```sh
+cd frontend
+npm install
+npm run dev     # con l'engine già avviato (npm start dalla radice)
+npm run build   # frontend/dist
+```
+
 ## Stato
 
 Prima versione del README: struttura, API e istruzioni di avvio saranno aggiunte man mano.
