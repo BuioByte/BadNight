@@ -94,8 +94,6 @@ La chiave è facoltativa per server locali che non richiedono autenticazione. `O
 - `packages/engine/`: server CLI, partita, WebSocket per il frontend, pagina web (`public/`).
 - `packages/level/`: livello YAML, regole della partita e tool `look`, `examine`, `act`, `move`, `talk`.
 - `packages/agent-harness/`: registry dei tool e loop Gemini/OpenAI-compatible.
-- `shared/contracts/`: JSON Schema di un contratto REST per il client (sessioni, inventario). Oggi non ha
-  utilizzatori: il frontend usa il WebSocket dell'engine.
 - `docs/MVSP.md`: baseline di sicurezza minima del prototipo.
 
 ## Comandi
