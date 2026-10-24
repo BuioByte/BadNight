@@ -10,10 +10,10 @@ Non contiene il server HTTP, le chiamate a Gemma né la sintesi vocale. Quelle p
 che importa questo modulo.
 
 ```sh
+corepack pnpm install   # dalla radice del repo (workspace pnpm)
 cd packages/level
-npm install
-npm test        # test
-npm run play    # gioca il livello 0 dal terminale, chiamando i tool a mano
+corepack pnpm test      # test
+corepack pnpm play      # gioca il livello 0 dal terminale, chiamando i tool a mano
 ```
 
 ## Uso dall'engine

@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BadNight</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=UnifrakturMaguntia&family=VT323&display=swap">
+  <link rel="stylesheet" href="/src/style.css">
+</head>
+<body class="locked">
+  <div class="fog" aria-hidden="true"></div>
+
+  <header class="top">
+    <h1 class="brand">BadNight</h1>
+    <div class="where">
+      <span id="level-title" class="level-title"></span>
+      <span id="room-name" class="room-name"></span>
+    </div>
+    <div id="progress" class="progress"></div>
+    <button type="button" id="reset" class="reset" disabled>Nuova notte</button>
+  </header>
+
+  <main class="stage">
+    <section class="frame illustration" aria-label="Illustrazione">
+      <pre id="art" class="art" aria-hidden="true">
+                ,
+               (|
+         .-'''''|'''''-.
+       .'  _    |    _  '.
+      /   / \       / \   \
+     |   /___\  /\ /___\   |
+     |         /__\         |
+     |  \/\            /\/  |
+      \   \/\/\/\/\/\/\/   /
+       '.   \/\/\/\/\/   .'
+         '-.__________.-'
+      </pre>
+      <div class="caption">
+        <p id="exits" class="exits"></p>
+        <ul id="milestones" class="milestones"></ul>
+      </div>
+    </section>
+
+    <section class="frame story" aria-label="Racconto">
+      <div id="story" class="story-log" role="log" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <form id="prompt" class="prompt" autocomplete="off">
+    <label for="text" class="visually-hidden">Cosa fai?</label>
+    <textarea id="text" rows="2" placeholder="Cosa fai?" disabled></textarea>
+    <button id="send" class="send" disabled>Agisci</button>
+    <p id="status" class="status" aria-live="polite"></p>
+  </form>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

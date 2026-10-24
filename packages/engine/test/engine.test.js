@@ -117,3 +117,17 @@ test('WebSocket', async (t) => {
   got = await until('state');
   assert.deepEqual(got.at(-1).history, []);
 });
+
+test('shutdown chiude i WebSocket aperti e il server', async () => {
+  const engine = createEngine(level, { agent: devAgent });
+  const server = createHttpServer(engine, { publicDir: fileURLToPath(new URL('../public', import.meta.url)) });
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const ws = new WebSocket(`ws://127.0.0.1:${server.address().port}/ws`);
+  await once(ws, 'open');
+
+  const closed = once(ws, 'close');
+  await server.shutdown();
+  const [code] = await closed;
+  assert.equal(code, 1001);
+  assert.equal(server.listening, false);
+});

@@ -5,7 +5,7 @@
 - Keep the hackfest prototype small and focused on the one-level BadNight game.
 - Keep the agent harness independent of game rules and tool implementations; consumers register tools and own their application state and conversation history.
 - Keep provider credentials in the server-side process that uses the harness. Never expose them to browser clients.
-- Keep API request and response contracts in `shared/contracts/*.json`; derive frontend TypeScript types from those schemas.
+- Keep the WebSocket protocol between the engine and the frontend documented in `packages/engine/README.md`.
 - Use pnpm and TypeScript for the web UI. Keep the harness on the Node.js LTS version in `.nvmrc`.
 
 ## Security baseline
