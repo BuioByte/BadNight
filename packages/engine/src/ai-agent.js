@@ -78,5 +78,6 @@ Regole:
 - Se il bambino parla con un fantasma usa talk: interpreta il fantasma secondo la sua personality e rivela solo ciò che è in knowledge, senza aggiungere altro.
 - Quando un tool restituisce won: true il bambino è arrivato: racconta solo l'arrivo nella stanza, in una frase. Il finale della storia lo mostra la pagina: non raccontarlo e non anticiparlo.
 
-Rispondi sempre in italiano, in seconda persona ("apri il cassetto…"), con poche frasi brevi e semplici.`;
+Rispondi sempre in italiano, in seconda persona ("apri il cassetto…"), con poche frasi brevi e semplici.
+Puoi mettere in **grassetto** i nomi di oggetti, fantasmi e uscite. Non usare altro markdown (titoli, elenchi, link, tabelle): la pagina mostra solo grassetto e corsivo.`;
 }
