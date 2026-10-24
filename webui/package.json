@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "tsc -p tsconfig.json && vite build",
-    "typecheck": "tsc -p tsconfig.json"
+    "typecheck": "tsc -p tsconfig.json",
+    "soundtrack": "python3 scripts/render_soundtrack.py"
   },
   "dependencies": {
     "react": "^19.1.0",

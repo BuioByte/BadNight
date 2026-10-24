@@ -52,6 +52,10 @@ La chiave è facoltativa per server locali che non richiedono autenticazione. `O
 
 The API server is not included on this branch. The Web UI requires a compatible API service to play.
 
+## Soundtrack
+
+The Web UI has an opt-in, looping 32-second instrumental soundtrack. You can preview it from the sound button on the opening screen; it does not require the game API. The WAV is generated with Python's standard library and can be rerendered with `python3 webui/scripts/render_soundtrack.py`.
+
 ## Comandi
 
 ```sh
