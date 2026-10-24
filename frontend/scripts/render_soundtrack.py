@@ -76,6 +76,28 @@ def render_key_click(path, resonance, seed):
         click.writeframes(frames)
 
 
+def render_typewriter_click(path, resonance, seed):
+    frames = bytearray()
+    previous_noise = 0.0
+    state = seed
+    for sample in range(int(SAMPLE_RATE * 0.06)):
+        time = sample / SAMPLE_RATE
+        state = (state * 1664525 + 1013904223) % 4294967296
+        noise = state / 2147483648.0 - 1.0
+        previous_noise = previous_noise * 0.25 + noise * 0.75
+        body = math.sin(2.0 * math.pi * resonance * time) * math.exp(-time / 0.022)
+        frame = math.sin(2.0 * math.pi * (resonance * 1.7) * time) * math.exp(-time / 0.009)
+        tick = math.sin(2.0 * math.pi * 2400 * time) * math.exp(-time / 0.0025)
+        value = previous_noise * 0.23 + body * 0.26 + frame * 0.13 + tick * 0.2
+        encoded = round(max(-1.0, min(1.0, value)) * 32767)
+        frames.extend(struct.pack('<hh', encoded, encoded))
+    with wave.open(str(path), 'wb') as click:
+        click.setnchannels(2)
+        click.setsampwidth(2)
+        click.setframerate(SAMPLE_RATE)
+        click.writeframes(frames)
+
+
 for bar in range(BAR_COUNT):
     chord = chords[bar % len(chords)]
     start = bar * SECONDS_PER_BAR
@@ -99,6 +121,9 @@ for sample in range(delay_two, LENGTH):
 OUTPUT.parent.mkdir(parents=True, exist_ok=True)
 render_key_click(OUTPUT.parent / 'type-key-1.wav', 470, 21)
 render_key_click(OUTPUT.parent / 'type-key-2.wav', 590, 37)
+render_typewriter_click(OUTPUT.parent / 'typewriter-1.wav', 820, 41)
+render_typewriter_click(OUTPUT.parent / 'typewriter-2.wav', 1010, 83)
+render_typewriter_click(OUTPUT.parent / 'typewriter-3.wav', 930, 127)
 with wave.open(str(OUTPUT), 'wb') as soundtrack:
     soundtrack.setnchannels(2)
     soundtrack.setsampwidth(2)

@@ -42,7 +42,7 @@ l'engine è partito su un'altra porta.
 | `src/style.css` | tema gotico |
 | `src/sound.js` | musica, suoni dei tasti e volumi del mixer |
 
-L'audio è attivo per impostazione predefinita. Il mixer nell'intestazione regola separatamente volume master, musica e tasti e può disattivare l'audio. Se il browser blocca l'avvio automatico, la riproduzione parte alla prima interazione. Le tracce WAV sono locali e si rigenerano dalla radice del repository con `python3 frontend/scripts/render_soundtrack.py`.
+La schermata iniziale permette di scegliere se attivare l'audio. Il mixer nell'intestazione regola separatamente volume master, musica, tasti del giocatore e macchina da scrivere. Le risposte dell'engine vengono mostrate carattere per carattere. Le tracce WAV sono locali e si rigenerano dalla radice del repository con `python3 frontend/scripts/render_soundtrack.py`.
 
 ## Si aspetta sempre la risposta
 

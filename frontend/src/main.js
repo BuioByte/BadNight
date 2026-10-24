@@ -4,7 +4,7 @@ import { connect } from './socket.js';
 import { createTurn } from './turn.js';
 import { createStory } from './story.js';
 import { createRoom } from './room.js';
-import { playTypingSound, setAudioEnabled, setVolume } from './sound.js';
+import { playNarrationSound, playTypingSound, setAudioEnabled, setVolume } from './sound.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -13,9 +13,12 @@ const text = $('text');
 const resetButton = $('reset');
 const art = $('art');
 const audioToggle = $('audio-toggle');
+const welcome = $('welcome');
+const welcomeAudio = $('welcome-audio');
+const startGame = $('start-game');
 
 const turn = createTurn({ text, send: $('send'), reset: resetButton, status: $('status') });
-const story = createStory($('story'));
+const story = createStory($('story'), { typeSound: playNarrationSound });
 const room = createRoom({
   levelTitle: $('level-title'),
   roomName: $('room-name'),
@@ -24,13 +27,33 @@ const room = createRoom({
   milestones: $('milestones'),
 });
 
-audioToggle.addEventListener('click', async () => {
-  const enabled = await setAudioEnabled(audioToggle.getAttribute('aria-pressed') !== 'true');
+function updateAudioControls(enabled) {
   audioToggle.setAttribute('aria-pressed', String(enabled));
   audioToggle.textContent = enabled ? 'Audio attivo' : 'Attiva audio';
+  welcomeAudio.checked = enabled;
+}
+
+function chooseAudio(enabled) {
+  const active = setAudioEnabled(enabled);
+  updateAudioControls(active);
+}
+
+audioToggle.addEventListener('click', () => {
+  chooseAudio(audioToggle.getAttribute('aria-pressed') !== 'true');
 });
 
-for (const channel of ['master', 'music', 'typing']) {
+welcomeAudio.addEventListener('change', () => chooseAudio(welcomeAudio.checked));
+startGame.addEventListener('click', () => {
+  chooseAudio(welcomeAudio.checked);
+  welcome.close();
+  story.startNarration();
+  turn.lock('la storia prende vita…');
+  if (engineReady) story.whenIdle(() => turn.ready());
+});
+
+welcome.showModal();
+
+for (const channel of ['master', 'music', 'typing', 'narration']) {
   const slider = $(`volume-${channel}`);
   const output = $(`volume-${channel}-value`);
   slider.addEventListener('input', () => {
@@ -50,6 +73,7 @@ function stir() {
 
 // L'engine risponde a `reset` solo con `state`, senza `ready`: quello `state` è la risposta e sblocca l'input.
 let resetPending = false;
+let engineReady = false;
 
 const socket = connect(
   {
@@ -60,11 +84,12 @@ const socket = connect(
       if (msg.busy) turn.lock();
       else if (resetPending) {
         resetPending = false;
-        turn.ready();
+        story.whenIdle(() => turn.ready());
       }
     },
     ready() {
-      turn.ready();
+      engineReady = true;
+      if (!welcome.open) story.whenIdle(() => turn.ready());
     },
     input(msg) {
       turn.lock();

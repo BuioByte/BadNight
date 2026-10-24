@@ -12,6 +12,14 @@
 <body class="locked">
   <div class="fog" aria-hidden="true"></div>
 
+  <dialog id="welcome" class="welcome" aria-labelledby="welcome-title">
+    <p class="welcome-eyebrow">UNA PICCOLA STORIA DI FANTASMI</p>
+    <h2 id="welcome-title">La casa fa<br><em>strani rumori.</em></h2>
+    <p class="welcome-copy">La cameretta è buia. Il lettone di mamma e papà è dall’altra parte della casa.</p>
+    <label class="welcome-audio"><input id="welcome-audio" type="checkbox" checked> Attiva musica e suoni</label>
+    <button type="button" id="start-game" class="welcome-start">Entra nella storia <span aria-hidden="true">→</span></button>
+  </dialog>
+
   <header class="top">
     <h1 class="brand">BadNight</h1>
     <div class="where">
@@ -32,8 +40,12 @@
           <input id="volume-music" type="range" min="0" max="100" value="20">
         </label>
         <label class="mixer-channel" for="volume-typing">
-          <span>Tasti <output id="volume-typing-value">16%</output></span>
+          <span>Tasti giocatore <output id="volume-typing-value">16%</output></span>
           <input id="volume-typing" type="range" min="0" max="100" value="16">
+        </label>
+        <label class="mixer-channel" for="volume-narration">
+          <span>Macchina da scrivere <output id="volume-narration-value">12%</output></span>
+          <input id="volume-narration" type="range" min="0" max="100" value="12">
         </label>
       </div>
     </details>

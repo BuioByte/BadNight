@@ -180,6 +180,29 @@ body::after {
 .mixer-channel output { color: var(--parchment); font-variant-numeric: tabular-nums; }
 .mixer-channel input { width: 100%; accent-color: var(--candle); }
 
+.welcome {
+  width: min(520px, calc(100vw - 32px));
+  max-width: none;
+  padding: clamp(28px, 7vw, 56px);
+  border: 1px solid var(--bruise-2);
+  border-radius: var(--radius);
+  background:
+    radial-gradient(ellipse at 50% 0%, rgb(59 42 79 / 0.55), transparent 68%),
+    var(--night-2);
+  color: var(--parchment);
+  box-shadow: 0 24px 90px rgb(0 0 0 / 0.7);
+}
+
+.welcome::backdrop { background: rgb(5 4 8 / 0.84); backdrop-filter: blur(5px); }
+.welcome-eyebrow { color: var(--candle); font: 10px var(--font-ascii); letter-spacing: 0.16em; }
+.welcome h2 { margin: 16px 0; font: 400 clamp(2.4rem, 9vw, 4rem) / 1.02 var(--font-title); }
+.welcome h2 em { color: var(--candle); }
+.welcome-copy { max-width: 390px; color: var(--parchment-dim); font-style: italic; }
+.welcome-audio { display: flex; align-items: center; gap: 10px; margin: 24px 0 18px; color: var(--parchment-dim); font-size: 15px; }
+.welcome-audio input { width: 17px; height: 17px; accent-color: var(--candle); }
+.welcome-start { width: 100%; text-align: left; }
+.welcome-start span { float: right; color: var(--candle); }
+
 .candle {
   position: relative;
   width: 8px;
@@ -385,6 +408,8 @@ body.locked textarea:disabled {
   color: var(--parchment);
 }
 
+.entry.typing::after { content: '▏'; color: var(--candle); animation: type-cursor 0.7s step-end infinite; }
+
 .entry-error {
   color: var(--blood-light);
   font-style: italic;
@@ -481,6 +506,8 @@ body.locked .status::after {
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: none; }
 }
+
+@keyframes type-cursor { 50% { opacity: 0; } }
 
 @keyframes drift {
   from { transform: translate3d(-3%, 0, 0); }
