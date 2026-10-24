@@ -7,7 +7,7 @@ import { loadLevelFile } from '@badnight/level';
 import { AI_ERROR_MESSAGE, createAiAgent, createEngine } from '../src/index.js';
 
 const level = await loadLevelFile(
-  fileURLToPath(new URL('../levels/level-0.yaml', import.meta.resolve('@badnight/level'))),
+  fileURLToPath(new URL('fixtures/level.yaml', import.meta.url)),
 );
 
 // Risposte del modello nel formato del Gemini SDK, come nei test del harness.
@@ -71,7 +71,7 @@ test('al modello vanno i tool di gioco, non respond, e il prompt del livello', a
   const { config } = client.requests[0];
   const names = config.tools[0].functionDeclarations.map((d) => d.name);
   assert.deepEqual(names, ['look', 'examine', 'act', 'move', 'talk']);
-  assert.match(config.systemInstruction, /La notte di prova/);
+  assert.match(config.systemInstruction, /Livello di test/);
   assert.match(config.systemInstruction, /in italiano/);
 });
 
