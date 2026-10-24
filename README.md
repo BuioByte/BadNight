@@ -95,6 +95,20 @@ in proxy all'engine.
 
 Gemini AI Studio è il provider predefinito. Il modello Gemma 4 31B Dense gestisce ragionamento e tool call; Gemma 4 26B A4B MoE genera la narrazione. I nomi sono quelli supportati dal Gemini Developer API.
 
+### Configurare Gemini AI Studio
+
+1. Accedi a [Google AI Studio](https://aistudio.google.com/) con un account Google e accetta i termini.
+2. Apri [API keys](https://aistudio.google.com/app/apikey) e crea o copia una chiave Gemini. Per i nuovi utenti AI Studio crea un progetto e una chiave; se hai già progetti Google Cloud, potrebbe essere necessario importarli.
+3. Nella radice del repository, crea o aggiorna `.env` e aggiungi la chiave:
+
+   ```sh
+   GEMINI_API_KEY=incolla_qui_la_tua_chiave
+   ```
+
+4. Avvia il gioco con `corepack pnpm start -- --agent ai`.
+
+Il livello gratuito consente l'uso dell'API entro le quote previste per i modelli disponibili; disponibilità e limiti dipendono da modello, progetto e account. Non occorre collegare un metodo di pagamento per restare sul livello gratuito. Controlla quote e utilizzo nella dashboard di AI Studio. Non condividere la chiave né inserirla nel frontend: è letta dal processo server e il file `.env` locale non va committato. Per dettagli aggiornati, consulta la [guida ufficiale alle chiavi](https://ai.google.dev/gemini-api/docs/api-key) e le [condizioni del livello gratuito](https://ai.google.dev/gemini-api/docs/billing).
+
 Il tool adapter OpenAI-compatible del harness supporta endpoint che implementano Chat Completions. Per selezionarlo, configura `.env` così:
 
 ```sh
