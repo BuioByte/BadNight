@@ -78,6 +78,7 @@ goal: camera_genitori     # entrarci fa vincere
 rooms:
   cameretta:
     name: Cameretta
+    asset: room_cameretta
     description: ...
     milestones:           # DAG dei traguardi
       chiave_trovata:
@@ -89,8 +90,14 @@ rooms:
         requires: [porta_aperta]     # traguardi che sbloccano l'uscita
         locked: Testo se è chiusa.
     objects:
+      chiave:
+        name: Chiave
+        asset: object_chiave
+        description: ...
+        hidden: true      # resta nella stanza; un'azione la rivela con `reveal`
       porta:
         name: Porta
+        asset: object_porta_cameretta
         description: ...
         states:           # opzionale; il primo è lo stato iniziale, il testo si aggiunge alla descrizione
           chiusa: È chiusa a chiave.
@@ -109,6 +116,7 @@ rooms:
     ghosts:
       pip:
         name: Pip
+        asset: ghost_pip
         description: ...
         personality: Istruzioni di personalità per il modello.
         voice: id-voce-elevenlabs    # opzionale
@@ -118,6 +126,22 @@ rooms:
             text: La chiave è sotto il letto.
         actions: { ... }             # come per gli oggetti
 ```
+
+### Asset grafici
+
+Il campo facoltativo `asset` identifica la risorsa grafica di una stanza (sfondo), un oggetto,
+o un fantasma. Deve rispettare il formato `[a-z][a-z0-9_]*`.
+Il prefisso non determina il tipo di elemento: gli identificativi esistenti restano validi.
+
+Sono identificativi logici, non percorsi o URL: il frontend li associa ai file effettivi.
+Il caricatore valida il formato, non l'esistenza dei file; lo stesso asset si puo' riutilizzare.
+Il campo non modifica le regole di gioco e non e' obbligatorio nei livelli esistenti.
+
+`look`, `examine` e `talk` restituiscono `asset` insieme ai dati degli elementi visibili.
+Anche i riferimenti in `changes` (stati, elementi rivelati/nascosti e stanza)
+lo includono quando presente. Gli elementi nascosti restano esclusi dalle viste fino alla scoperta.
+L'asset identifica l'elemento indipendentemente dal suo stato; eventuali varianti grafiche
+possono essere selezionate dal frontend usando anche `state` o i cambiamenti di stato.
 
 **Condizioni** (`if`). Più chiavi nella stessa mappa vanno tutte soddisfatte.
 
@@ -133,5 +157,5 @@ rooms:
 
 **Traguardi.** L'engine non completa mai un traguardo i cui prerequisiti non sono completati.
 Un esito che contiene `complete: X` viene quindi saltato finché i prerequisiti di `X` mancano,
-e vale l'esito successivo. Nel livello 0 succede con "guarda sotto il letto", che senza candela accesa
+e vale l'esito successivo. Nel livello 1 succede con "guarda sotto il letto", che senza candela accesa
 dà "è troppo buio".

@@ -113,6 +113,8 @@ La chiave è facoltativa per server locali che non richiedono autenticazione. `O
 - `packages/agent-harness/`: registry dei tool e loop Gemini/OpenAI-compatible.
 - `docs/MVSP.md`: baseline di sicurezza minima del prototipo.
 
+La schermata iniziale permette di attivare o disattivare l'audio. Il mixer controlla separatamente master, musica, tasti del giocatore e macchina da scrivere della narrazione. Le tracce WAV locali si rigenerano con `python3 frontend/scripts/render_soundtrack.py`.
+
 ## Comandi
 
 ```sh

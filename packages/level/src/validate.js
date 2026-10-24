@@ -43,6 +43,15 @@ export function validateLevel(raw) {
     return String(v);
   }
 
+  function parseAsset(obj, path) {
+    if (!Object.hasOwn(obj, 'asset')) return {};
+    if (typeof obj.asset !== 'string' || !ID_RE.test(obj.asset)) {
+      err(`${path}.asset`, 'deve essere un id asset: minuscole, cifre e _, iniziando con una lettera');
+      return {};
+    }
+    return { asset: obj.asset };
+  }
+
   function entries(v, path) {
     if (v == null) return [];
     if (!isMap(v)) {
@@ -184,11 +193,12 @@ export function validateLevel(raw) {
 
   for (const [roomId, r] of entries(raw.rooms, 'rooms')) {
     const p = `rooms.${roomId}`;
-    if (!keys(r, p, ['name', 'description', 'milestones', 'exits', 'objects', 'ghosts'], ['name', 'description'])) continue;
+    if (!keys(r, p, ['name', 'description', 'milestones', 'exits', 'objects', 'ghosts', 'asset'], ['name', 'description'])) continue;
     const room = {
       id: roomId,
       name: text(r, 'name', p),
       description: text(r, 'description', p),
+      ...parseAsset(r, p),
       exits: [],
       objects: [],
       ghosts: [],
@@ -225,8 +235,8 @@ export function validateLevel(raw) {
       for (const [id, e] of entries(r[section], `${p}.${section}`)) {
         const xp = `${p}.${section}.${id}`;
         const allowed = kind === 'object'
-          ? ['name', 'description', 'states', 'hidden', 'actions']
-          : ['name', 'description', 'personality', 'voice', 'knowledge', 'hidden', 'actions'];
+          ? ['name', 'description', 'states', 'hidden', 'actions', 'asset']
+          : ['name', 'description', 'personality', 'voice', 'knowledge', 'hidden', 'actions', 'asset'];
         if (!keys(e, xp, allowed, kind === 'object' ? ['name'] : ['name', 'personality'])) continue;
         if (level.entities[id]) {
           err(xp, `id "${id}" già usato da un altro oggetto o fantasma`);
@@ -240,6 +250,7 @@ export function validateLevel(raw) {
           room: roomId,
           name: text(e, 'name', xp),
           description: text(e, 'description', xp),
+          ...parseAsset(e, xp),
           hidden: e.hidden === true,
           states: null,
           initialState: null,

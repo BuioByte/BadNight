@@ -25,6 +25,19 @@ This is the security baseline for the local hackfest prototype, informed by the 
 
 The harness treats provider output as untrusted, validates tool names and arguments, and retries empty model responses once with a corrective prompt. It fails with a typed error if the retry is also empty. This change adds no data storage, credentials, or network endpoint.
 
+## Browser audio
+
+- **User control:** The welcome screen lets the player enable or disable audio before starting. The browser mixer has separate master, music, player-key, and narration-key levels; browsers that block autoplay start playback after the first user interaction.
+- **Data and permissions:** Audio uses local static assets. No audio is recorded, uploaded, or fetched from an external service; no new permission or API boundary is introduced.
+- **Input validation:** Player typing sounds respond to ordinary character key events; narration typing sounds use a sparse cadence over displayed characters. Both use fixed local assets, and player text is not read or transmitted by the sound system.
+- **Secrets and least privilege:** Not applicable; the feature uses no credentials, network access, or external service.
+## Level merge compatibility
+
+- Validate entity references, conditions, effects, and asset identifiers when loading a level. Reject unknown references and unsupported keys rather than applying partial rules.
+- Keep game state authoritative: tools may examine only visible entities in the current room. Objects remain in their rooms; progression uses entity states and milestones. Hidden entities remain unavailable until revealed.
+- Assets are logical identifiers, not URLs or filesystem paths; resolving them must not grant tools file or network access.
+- This compatibility repair introduces no credentials, persistence, authentication, or network endpoints; related controls remain unchanged and production controls remain out of scope for the local prototype.
+
 ## Engine and agent harness
 
 The engine loads provider credentials from the server environment or the ignored root `.env`; they never reach the browser. Player text reaches the model only as the harness `Action` input, and the model acts on the game only through the registered game tools, whose results come from the level rules. Tools are bound to the current turn and reject calls after it ends (including a timeout), so a late model response cannot change the state or reply after `ready`. Harness and provider errors reach the browser as a generic message; details are logged on the server console only.

@@ -8,7 +8,8 @@
     "dev": "vite",
     "build": "vite build",
     "build:engine": "vite build --outDir ../packages/engine/public --emptyOutDir",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "soundtrack": "python3 scripts/render_soundtrack.py"
   },
   "engines": {
     "node": ">=22"

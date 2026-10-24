@@ -12,6 +12,27 @@
 <body class="locked">
   <div class="fog" aria-hidden="true"></div>
 
+  <dialog id="welcome" class="welcome" aria-labelledby="welcome-title">
+    <div class="door-scene" aria-hidden="true">
+      <div class="doorway">
+        <div class="door-void"></div>
+        <div class="door-leaf" id="door-leaf">
+          <div class="door-panels">
+            <span class="door-panel"></span><span class="door-panel"></span>
+            <span class="door-panel"></span><span class="door-panel"></span>
+            <span class="door-panel"></span><span class="door-panel"></span>
+          </div>
+          <span class="door-knob"></span>
+        </div>
+      </div>
+    </div>
+    <p class="welcome-eyebrow">UNA PICCOLA STORIA DI FANTASMI</p>
+    <h2 id="welcome-title">La casa fa<br><em>strani rumori.</em></h2>
+    <p class="welcome-copy">La cameretta è buia. Il lettone di mamma e papà è dall’altra parte della casa.</p>
+    <label class="welcome-audio"><input id="welcome-audio" type="checkbox" checked> Attiva musica e suoni</label>
+    <button type="button" id="start-game" class="welcome-start">Entra nella storia <span aria-hidden="true">→</span></button>
+  </dialog>
+
   <header class="top">
     <h1 class="brand">BadNight</h1>
     <div class="where">
@@ -19,6 +40,28 @@
       <span id="room-name" class="room-name"></span>
     </div>
     <div id="progress" class="progress"></div>
+    <details class="mixer">
+      <summary aria-label="Apri il mixer audio" title="Mixer audio"><span aria-hidden="true">♫</span></summary>
+      <div class="mixer-panel" role="group" aria-label="Volume audio">
+        <button type="button" id="audio-toggle" aria-pressed="true">Audio attivo</button>
+        <label class="mixer-channel" for="volume-master">
+          <span>Master <output id="volume-master-value">100%</output></span>
+          <input id="volume-master" type="range" min="0" max="100" value="100">
+        </label>
+        <label class="mixer-channel" for="volume-music">
+          <span>Musica <output id="volume-music-value">20%</output></span>
+          <input id="volume-music" type="range" min="0" max="100" value="20">
+        </label>
+        <label class="mixer-channel" for="volume-typing">
+          <span>Tasti giocatore <output id="volume-typing-value">16%</output></span>
+          <input id="volume-typing" type="range" min="0" max="100" value="16">
+        </label>
+        <label class="mixer-channel" for="volume-narration">
+          <span>Macchina da scrivere <output id="volume-narration-value">12%</output></span>
+          <input id="volume-narration" type="range" min="0" max="100" value="12">
+        </label>
+      </div>
+    </details>
     <button type="button" id="reset" class="reset" disabled>Nuova notte</button>
   </header>
 

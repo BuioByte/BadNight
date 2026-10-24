@@ -1,13 +1,74 @@
 // Il racconto: intro, testo del giocatore, risposte dell'agente, errori e, alla vittoria, outro.
 // I messaggi `tool` non sono risposte e non compaiono qui, ma contano per sapere quanta history è già mostrata.
 
-export function createStory(el) {
+const TYPE_DELAY = 28;
+
+export function createStory(el, { typeSound = () => {} } = {}) {
   let rendered = 0; // messaggi della history già mostrati
+  let started = false;
+  let typing = false;
+  const queue = [];
+  const idleCallbacks = [];
+
+  function typeNext() {
+    if (typing) return;
+    const next = queue.shift();
+    if (!next) {
+      idleCallbacks.splice(0).forEach((callback) => callback());
+      return;
+    }
+    if (!next.element.isConnected) return typeNext();
+
+    typing = true;
+    const characters = [...next.text];
+    if (characters.length === 0) {
+      next.element.dataset.typed = 'true';
+      typing = false;
+      return typeNext();
+    }
+    next.element.classList.add('typing');
+    const visual = document.createElement('span');
+    visual.setAttribute('aria-hidden', 'true');
+    next.element.replaceChildren(visual);
+    let typed = '';
+    let index = 0;
+    const timer = setInterval(() => {
+      const character = characters[index++];
+      typed += character;
+      visual.textContent = typed;
+      if (!/\s/.test(character) && index % 3 === 0) typeSound();
+      el.scrollTop = el.scrollHeight;
+
+      if (index === characters.length) {
+        clearInterval(timer);
+        const accessible = document.createElement('span');
+        accessible.className = 'visually-hidden';
+        accessible.textContent = next.text;
+        next.element.append(accessible);
+        next.element.classList.remove('typing');
+        next.element.dataset.typed = 'true';
+        setTimeout(() => {
+          typing = false;
+          typeNext();
+        }, 110);
+      }
+    }, TYPE_DELAY);
+  }
+
+  function enqueue(element, text) {
+    element.dataset.typed = 'false';
+    queue.push({ element, text });
+    typeNext();
+  }
 
   function entry(kind, text, animate) {
     const p = document.createElement('p');
     p.className = `entry entry-${kind}${animate ? ' entering' : ''}`;
-    p.textContent = text;
+    if (['intro', 'output', 'outro'].includes(kind)) {
+      p.dataset.fullText = text;
+      if (started) enqueue(p, text);
+      else p.textContent = text;
+    } else p.textContent = text;
     el.append(p);
     el.scrollTop = el.scrollHeight;
   }
@@ -28,6 +89,18 @@ export function createStory(el) {
   }
 
   return {
+    startNarration() {
+      started = true;
+      for (const p of el.querySelectorAll('.entry-intro, .entry-output, .entry-outro')) {
+        if (p.dataset.typed !== 'true') enqueue(p, p.dataset.fullText ?? p.textContent);
+      }
+    },
+
+    whenIdle(callback) {
+      if (!typing && queue.length === 0) callback();
+      else idleCallbacks.push(callback);
+    },
+
     // Messaggio arrivato durante il turno.
     add,
 

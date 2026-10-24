@@ -4,6 +4,7 @@ import { connect } from './socket.js';
 import { createTurn } from './turn.js';
 import { createStory } from './story.js';
 import { createRoom } from './room.js';
+import { playNarrationSound, playTypingSound, setAudioEnabled, setVolume } from './sound.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -11,9 +12,13 @@ const form = $('prompt');
 const text = $('text');
 const resetButton = $('reset');
 const art = $('art');
+const audioToggle = $('audio-toggle');
+const welcome = $('welcome');
+const welcomeAudio = $('welcome-audio');
+const startGame = $('start-game');
 
 const turn = createTurn({ text, send: $('send'), reset: resetButton, status: $('status') });
-const story = createStory($('story'));
+const story = createStory($('story'), { typeSound: playNarrationSound });
 const room = createRoom({
   levelTitle: $('level-title'),
   roomName: $('room-name'),
@@ -21,6 +26,64 @@ const room = createRoom({
   exits: $('exits'),
   milestones: $('milestones'),
 });
+
+function updateAudioControls(enabled) {
+  audioToggle.setAttribute('aria-pressed', String(enabled));
+  audioToggle.textContent = enabled ? 'Audio attivo' : 'Attiva audio';
+  welcomeAudio.checked = enabled;
+}
+
+function chooseAudio(enabled) {
+  const active = setAudioEnabled(enabled);
+  updateAudioControls(active);
+}
+
+audioToggle.addEventListener('click', () => {
+  chooseAudio(audioToggle.getAttribute('aria-pressed') !== 'true');
+});
+
+welcomeAudio.addEventListener('change', () => chooseAudio(welcomeAudio.checked));
+startGame.addEventListener('click', () => {
+  if (startGame.disabled) return;
+  chooseAudio(welcomeAudio.checked);
+  startGame.disabled = true;
+  welcome.classList.add('is-opening');
+
+  let entered = false;
+  const enterGame = () => {
+    if (entered) return;
+    entered = true;
+    welcome.close();
+    story.startNarration();
+    turn.lock('la storia prende vita…');
+    if (engineReady) story.whenIdle(() => turn.ready());
+  };
+
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    enterGame();
+    return;
+  }
+
+  const door = $('door-leaf');
+  const fallback = setTimeout(enterGame, 1300);
+  door.addEventListener('transitionend', (event) => {
+    if (event.target !== door || event.propertyName !== 'transform') return;
+    clearTimeout(fallback);
+    enterGame();
+  }, { once: true });
+});
+
+welcome.showModal();
+
+for (const channel of ['master', 'music', 'typing', 'narration']) {
+  const slider = $(`volume-${channel}`);
+  const output = $(`volume-${channel}-value`);
+  slider.addEventListener('input', () => {
+    const volume = Number(slider.value) / 100;
+    output.value = `${slider.value}%`;
+    setVolume(channel, volume);
+  });
+}
 
 // Fa tremare la candela dell'illustrazione mentre l'agente usa i tool.
 let stirTimer;
@@ -32,6 +95,7 @@ function stir() {
 
 // L'engine risponde a `reset` solo con `state`, senza `ready`: quello `state` è la risposta e sblocca l'input.
 let resetPending = false;
+let engineReady = false;
 
 const socket = connect(
   {
@@ -42,11 +106,12 @@ const socket = connect(
       if (msg.busy) turn.lock();
       else if (resetPending) {
         resetPending = false;
-        turn.ready();
+        story.whenIdle(() => turn.ready());
       }
     },
     ready() {
-      turn.ready();
+      engineReady = true;
+      if (!welcome.open) story.whenIdle(() => turn.ready());
     },
     input(msg) {
       turn.lock();
@@ -92,6 +157,7 @@ form.addEventListener('submit', (ev) => {
 
 // Enter invia, Shift+Enter va a capo.
 text.addEventListener('keydown', (ev) => {
+  if (!ev.ctrlKey && !ev.metaKey && !ev.altKey && !ev.isComposing && ev.key.length === 1) playTypingSound();
   if (ev.key === 'Enter' && !ev.shiftKey && !ev.isComposing) {
     ev.preventDefault();
     submit();
