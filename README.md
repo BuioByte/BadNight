@@ -2,6 +2,8 @@
 
 Una piccola storia horror a bivi, delicata e adatta a un bambino di circa sei anni. Il bambino si è svegliato nella sua cameretta e attraversa una casa infestata di tre stanze per raggiungere il lettone dei genitori. Fantasmi, scricchiolii e ombre fanno un po' paura, senza scene violente.
 
+![BadNight: la cameretta illustrata in 1-bit e il racconto, con le azioni del giocatore e le risposte del narratore](docs/images/badnight.png)
+
 ## Setup and tests
 
 Serve Node.js LTS (`nvm use`) e pnpm tramite Corepack.
