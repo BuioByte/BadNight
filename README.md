@@ -50,6 +50,9 @@ Server locale in Node.js. Tiene lo stato della partita ed è l'unica fonte di ve
 
 Le chiavi API restano solo lato server, nel file `.env`, che non va committato.
 
+Il caricamento dei livelli, lo stato della partita e i tool per l'agente sono nel modulo
+[`packages/level`](packages/level/README.md).
+
 ### Frontend (pagina web)
 
 Pagina web servita dall'engine e collegata alle sue API. Mostra:

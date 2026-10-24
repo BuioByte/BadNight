@@ -1,0 +1,21 @@
+{
+  "name": "@badnight/level",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Livelli di BadNight: caricamento e validazione YAML, stato della partita e tool per l'agente AI",
+  "type": "module",
+  "exports": "./src/index.js",
+  "bin": {
+    "badnight-play": "./bin/play.js"
+  },
+  "scripts": {
+    "test": "node --test",
+    "play": "node bin/play.js"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "yaml": "^2.9.1"
+  }
+}
