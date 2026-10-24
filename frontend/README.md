@@ -29,6 +29,7 @@ npm run dev               # http://localhost:5173, /ws va in proxy all'engine
 | `npm run dev` | server di sviluppo con ricarica automatica |
 | `npm run build` | build in `frontend/dist/`, che l'engine serve (lo fa anche `corepack pnpm start`) |
 | `npm run preview` | serve `dist/` (con il proxy verso l'engine) per provare la build |
+| `npm test` | test (`node --test`, senza browser) |
 
 L'indirizzo dell'engine per il proxy si cambia con `ENGINE_URL` (vedi `.env.example`), per esempio se
 l'engine è partito su un'altra porta.
@@ -42,6 +43,7 @@ l'engine è partito su un'altra porta.
 | `src/socket.js` | WebSocket: connessione, riconnessione, dispatch per `type` |
 | `src/turn.js` | blocco dell'input |
 | `src/story.js` | racconto: intro, testo del giocatore, risposte, errori, outro |
+| `src/emphasis.js` | `**grassetto**` e `*corsivo*` nel testo del narratore, resi come `<strong>`/`<em>` (mai come HTML) |
 | `src/room.js` | stanza, progresso (una candela per stanza), uscite, traguardi |
 | `src/illustration.js` | sceglie e mostra l'illustrazione più pertinente |
 | `src/art/` | disegni 1-bit per chiave `asset` e primitive di disegno |

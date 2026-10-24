@@ -1,6 +1,8 @@
 // Il racconto: intro, testo del giocatore, risposte dell'agente, errori e, alla vittoria, outro.
 // I messaggi `tool` non sono risposte e non compaiono qui, ma contano per sapere quanta history è già mostrata.
 
+import { parseEmphasis, plainText, renderEmphasis } from './emphasis.js';
+
 const TYPE_DELAY = 28;
 
 export function createStory(el, { typeSound = () => {} } = {}) {
@@ -20,7 +22,8 @@ export function createStory(el, { typeSound = () => {} } = {}) {
     if (!next.element.isConnected) return typeNext();
 
     typing = true;
-    const characters = [...next.text];
+    const segments = parseEmphasis(next.text);
+    const characters = [...plainText(segments)];
     if (characters.length === 0) {
       next.element.dataset.typed = 'true';
       typing = false;
@@ -30,12 +33,10 @@ export function createStory(el, { typeSound = () => {} } = {}) {
     const visual = document.createElement('span');
     visual.setAttribute('aria-hidden', 'true');
     next.element.replaceChildren(visual);
-    let typed = '';
     let index = 0;
     const timer = setInterval(() => {
       const character = characters[index++];
-      typed += character;
-      visual.textContent = typed;
+      renderEmphasis(visual, segments, index);
       if (!/\s/.test(character) && index % 3 === 0) typeSound();
       el.scrollTop = el.scrollHeight;
 
@@ -43,7 +44,7 @@ export function createStory(el, { typeSound = () => {} } = {}) {
         clearInterval(timer);
         const accessible = document.createElement('span');
         accessible.className = 'visually-hidden';
-        accessible.textContent = next.text;
+        renderEmphasis(accessible, segments);
         next.element.append(accessible);
         next.element.classList.remove('typing');
         next.element.dataset.typed = 'true';
@@ -73,7 +74,7 @@ export function createStory(el, { typeSound = () => {} } = {}) {
       p.dataset.fullText = text;
       if (narrate && started) enqueue(p, text);
       else {
-        p.textContent = text;
+        renderEmphasis(p, parseEmphasis(text));
         p.dataset.typed = narrate ? 'false' : 'true';
       }
     } else p.textContent = text;

@@ -453,6 +453,12 @@ body.locked textarea:disabled {
   color: var(--parchment);
 }
 
+/* **grassetto** e *corsivo* del narratore (vedi src/emphasis.js): i nomi in scena alla luce della candela. */
+.entry strong {
+  color: var(--candle);
+  font-weight: 700;
+}
+
 .entry.typing::after { content: '▏'; color: var(--candle); animation: type-cursor 0.7s step-end infinite; }
 
 .entry-error {
