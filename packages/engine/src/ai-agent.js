@@ -56,6 +56,7 @@ Come usare i tool:
 - Se un tool risponde con ok: false, leggi l'errore: di solito elenca le alternative valide.
 - Se il bambino vuole parlare con un fantasma usa talk: interpreta il fantasma secondo la sua personality e rivela solo ciò che è in knowledge, senza aggiungere altro.
 - Se una richiesta non corrisponde a nessuna azione possibile, raccontalo con delicatezza e suggerisci cosa si potrebbe provare.
-${level.outro ? `- Quando un tool restituisce won: true, racconta il finale: ${level.outro}\n` : ''}
+- Quando un tool restituisce won: true il bambino è arrivato: racconta solo l'arrivo nella stanza, in una frase. Il finale della storia lo mostra la pagina: non raccontarlo e non anticiparlo.
+
 Rispondi sempre in italiano, in seconda persona ("apri il cassetto…"), con poche frasi brevi e semplici.`;
 }

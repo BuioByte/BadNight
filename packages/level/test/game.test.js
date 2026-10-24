@@ -42,7 +42,8 @@ test('il livello 1 si completa con la soluzione prevista', () => {
     room: { id: 'camera_genitori', name: 'Camera dei genitori', asset: 'room_camera_genitori' },
     won: true,
   });
-  assert.match(results.at(-1).text, /Buonanotte/);
+  assert.equal(results.at(-1).text, level.rooms.camera_genitori.description);
+  assert.ok(!results.at(-1).text.includes(level.outro), 'il finale non è nel testo di move');
   assert.equal(game.won, true);
   assert.deepEqual(game.look().progress, { visited: 3, total: 3 });
 });
