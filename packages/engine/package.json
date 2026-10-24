@@ -1,0 +1,22 @@
+{
+  "name": "@badnight/engine",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Engine di BadNight: server CLI con la partita, i tool per l'agente AI e la pagina web",
+  "type": "module",
+  "exports": "./src/index.js",
+  "bin": {
+    "badnight": "./bin/badnight.js"
+  },
+  "scripts": {
+    "start": "node bin/badnight.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@badnight/level": "0.1.0",
+    "ws": "^8.22.0"
+  }
+}

@@ -1,0 +1,78 @@
+<!doctype html>
+<!-- Pagina provvisoria, finché non c'è il frontend: client minimo del WebSocket dell'engine. -->
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BadNight</title>
+  <style>
+    body { background: #111; color: #ddd; font: 15px/1.5 system-ui, sans-serif; max-width: 860px; margin: 0 auto; padding: 16px; }
+    h1 { color: #f90; }
+    pre { background: #1c1c1c; padding: 12px; overflow-x: auto; white-space: pre-wrap; }
+    input, button { font: inherit; padding: 4px 8px; }
+    .input { color: #f90; } .output { color: #fff; } .tool { color: #888; } .error { color: #f66; }
+  </style>
+</head>
+<body>
+  <h1 id="title">BadNight</h1>
+  <p id="intro"></p>
+  <form id="form">
+    <input id="text" placeholder="Cosa fai?" size="50" disabled>
+    <button id="send" disabled>Invia</button>
+    <button type="button" id="reset" disabled>Nuova partita</button>
+  </form>
+  <pre id="log"></pre>
+  <h2>Stanza</h2>
+  <pre id="view"></pre>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    let ws;
+
+    function setReady(ready) {
+      for (const id of ['text', 'send', 'reset']) $(id).disabled = !ready;
+      if (ready) $('text').focus();
+    }
+
+    function show(m) {
+      const line = document.createElement('div');
+      line.className = m.type;
+      line.textContent =
+        m.type === 'input' ? `> ${m.text}` :
+        m.type === 'output' ? m.text :
+        m.type === 'tool' ? `  [${m.tool} ${JSON.stringify(m.args)}] ${JSON.stringify(m.result.changes ?? {})}` :
+        `Errore: ${m.error}`;
+      $('log').append(line);
+      line.scrollIntoView();
+    }
+
+    function connect() {
+      ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws`);
+      ws.onmessage = (ev) => {
+        const m = JSON.parse(ev.data);
+        if (m.type === 'ready') return setReady(true);
+        if (m.type === 'state') {
+          $('title').textContent = m.level.title;
+          $('intro').textContent = m.won ? m.level.outro : m.level.intro;
+          $('view').textContent = JSON.stringify({ ...m.view, completed: m.completed }, null, 2);
+          $('log').textContent = '';
+          return m.history.forEach(show);
+        }
+        show(m);
+      };
+      ws.onclose = () => { setReady(false); setTimeout(connect, 1000); };
+    }
+
+    $('form').onsubmit = (ev) => {
+      ev.preventDefault();
+      const text = $('text').value.trim();
+      if (!text) return;
+      ws.send(JSON.stringify({ type: 'input', text }));
+      $('text').value = '';
+      setReady(false); // fino al prossimo "ready"
+    };
+    $('reset').onclick = () => ws.send(JSON.stringify({ type: 'reset' }));
+
+    connect();
+  </script>
+</body>
+</html>

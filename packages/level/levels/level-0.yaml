@@ -1,0 +1,244 @@
+# Livello 0: livello di prova (stesse stanze ed enigmi del livello 1, senza inventario).
+# È il livello di default dell'engine e quello usato dai test. Formato descritto in packages/level/README.md.
+
+id: livello_0
+title: La notte di prova
+intro: >-
+  Ti svegli di soprassalto. La cameretta è buia, la casa scricchiola
+  e la camera di mamma e papà sembra lontanissima.
+start: cameretta
+goal: camera_genitori
+outro: >-
+  Ti tuffi nel lettone, tra mamma e papà. Dalla porta, i fantasmi
+  ti salutano con la mano. Buonanotte!
+
+rooms:
+  cameretta:
+    name: Cameretta
+    description: >-
+      La tua cameretta, ma di notte sembra un'altra: le ombre dei giocattoli
+      si allungano sulle pareti.
+    milestones:
+      candela_accesa:
+        description: La candela è accesa.
+      chiave_trovata:
+        description: Hai trovato la chiave della porta.
+        requires: [candela_accesa]
+      porta_aperta:
+        description: La porta della cameretta è aperta.
+        requires: [chiave_trovata]
+    exits:
+      salone:
+        description: La porta della cameretta, che dà sul salone.
+        requires: [porta_aperta]
+        locked: La porta è chiusa a chiave.
+    objects:
+      comodino:
+        name: Comodino
+        description: Il comodino accanto al letto, con un cassetto.
+        states:
+          chiuso: Il cassetto è chiuso.
+          aperto: Il cassetto è aperto.
+        actions:
+          apri:
+            description: Aprire il cassetto.
+            outcomes:
+              - if: { state: { comodino: aperto } }
+                text: Il cassetto è già aperto.
+              - text: Apri il cassetto e trovi un mozzicone di candela. Peccato che sia spento.
+                effects:
+                  - set_state: { comodino: aperto }
+                  - reveal: candela
+      candela:
+        name: Mozzicone di candela
+        description: Una candela consumata, ancora buona per fare un po' di luce.
+        hidden: true      # compare aprendo il comodino
+        states:
+          spenta: È spenta.
+          accesa: Brilla di una fiammella azzurra che non scotta.
+      letto:
+        name: Letto
+        description: Il tuo letto, con le coperte tutte arruffate.
+        actions:
+          guarda_sotto:
+            description: Guardare sotto il letto.
+            outcomes:
+              # Completa chiave_trovata, che richiede candela_accesa: finché la candela
+              # è spenta l'engine salta questo esito e passa ai successivi.
+              - if: { not: { completed: chiave_trovata } }
+                text: >-
+                  Alla luce della candela vedi qualcosa luccicare tra la polvere:
+                  una chiave di ferro con un fiocco rosso!
+                effects:
+                  - reveal: chiave
+                  - complete: chiave_trovata
+              - if: { completed: chiave_trovata }
+                text: Sotto il letto ora ci sono solo polvere e un calzino spaiato.
+              - text: È troppo buio per vedere qualcosa là sotto.
+      chiave:
+        name: Chiave di ferro
+        description: Una chiave pesante e fredda, con un fiocco rosso legato all'anello.
+        hidden: true      # compare guardando sotto il letto
+      porta:
+        name: Porta
+        description: La porta della cameretta.
+        states:
+          chiusa: È chiusa a chiave.
+          aperta: È aperta sul salone buio.
+        actions:
+          apri:
+            outcomes:
+              - if: { state: { porta: aperta } }
+                text: La porta è già aperta.
+              - if: { completed: chiave_trovata }
+                text: >-
+                  Infili la chiave nella serratura: gira con un clic e la porta
+                  si apre cigolando.
+                effects:
+                  - set_state: { porta: aperta }
+                  - hide: chiave
+                  - complete: porta_aperta
+              - text: La maniglia non si muove. Serve una chiave.
+    ghosts:
+      lady_brina:
+        name: Lady Brina
+        description: Una dama evanescente con un lungo velo azzurro e una lanterna senza vetro.
+        personality: >-
+          Governante gentile e un po' all'antica. Parla in modo cerimonioso, dà del voi
+          al bambino e si preoccupa che non si spaventi. Sa accendere le candele con un soffio.
+        knowledge:
+          - text: Nel cassetto del comodino c'è un mozzicone di candela.
+          - text: Può accendere una candela con un soffio, se il bambino ne trova una.
+          - if: { completed: candela_accesa }
+            text: Pip gioca sempre sotto il letto, forse ha visto qualcosa.
+        actions:
+          chiedi_luce:
+            description: Chiedere a Lady Brina di accendere la candela.
+            outcomes:
+              - if: { completed: candela_accesa }
+                text: '"La vostra candela brilla già, signorino."'
+              - if: { state: { comodino: aperto } }
+                text: >-
+                  Lady Brina soffia piano sul mozzicone e si accende una fiammella
+                  azzurra che non scotta.
+                effects:
+                  - set_state: { candela: accesa }
+                  - complete: candela_accesa
+              - text: '"Vi accenderei volentieri una candela, se solo ne trovassimo una."'
+      pip:
+        name: Pip
+        description: Un fantasmino dispettoso, piccolo come un cuscino, che fa le capriole a mezz'aria.
+        personality: >-
+          Bambino fantasma dispettoso e giocherellone. Risponde con indovinelli e prese in giro,
+          ma in fondo vuole aiutare. Non ammette mai di aver combinato un guaio, al massimo
+          lo lascia intuire.
+        knowledge:
+          - text: Giocando ha fatto cadere la chiave della porta, ma non dice dove.
+          - if: { completed: candela_accesa }
+            text: La chiave è rotolata sotto il letto.
+
+  salone:
+    name: Salone
+    description: >-
+      Un salone enorme, con un pianoforte a coda, una libreria che arriva al soffitto
+      e un grande arazzo appeso alla parete di fondo.
+    milestones:
+      spartito_trovato:
+        description: Hai trovato lo spartito della ninna nanna.
+      ninna_nanna_suonata:
+        description: Hai suonato la ninna nanna e la porta dietro l'arazzo si è svegliata.
+        requires: [spartito_trovato]
+    exits:
+      cameretta:
+        description: La porta della tua cameretta.
+      camera_genitori:
+        description: Una porta nascosta dietro l'arazzo.
+        requires: [ninna_nanna_suonata]
+        locked: Dietro l'arazzo c'è una porta, ma sembra addormentata e non si apre.
+    objects:
+      libreria:
+        name: Libreria
+        description: Scaffali pieni di libri polverosi e fogli sparsi.
+        actions:
+          cerca:
+            description: Cercare tra libri e fogli.
+            outcomes:
+              - if: { completed: spartito_trovato }
+                text: Solo libri noiosi, senza figure.
+              - text: Tra due libri di cucina trovi un foglio ingiallito. È uno spartito!
+                effects:
+                  - reveal: spartito
+                  - complete: spartito_trovato
+      spartito:
+        name: Spartito
+        description: Un foglio ingiallito con una ninna nanna. Il titolo dice "Per la porta che dorme".
+        hidden: true      # compare cercando nella libreria
+      pianoforte:
+        name: Pianoforte
+        description: Un pianoforte a coda nero, con il leggio vuoto.
+        actions:
+          suona:
+            outcomes:
+              - if: { completed: ninna_nanna_suonata }
+                text: Suoni di nuovo la ninna nanna e Ofelia canta, commossa.
+              - if: { completed: spartito_trovato }
+                text: >-
+                  Appoggi lo spartito sul leggio e suoni la ninna nanna. Ofelia canta con te
+                  e dietro l'arazzo una serratura sbadiglia e si apre.
+                effects:
+                  - complete: ninna_nanna_suonata
+              - text: Pigi tasti a caso. Ofelia si tappa le orecchie.
+      arazzo:
+        name: Arazzo
+        description: Un arazzo che raffigura un castello sotto la luna.
+        actions:
+          sposta:
+            description: Guardare dietro l'arazzo.
+            outcomes:
+              - if: { completed: ninna_nanna_suonata }
+                text: Dietro l'arazzo la porta è socchiusa.
+              - text: Dietro l'arazzo c'è una porta senza maniglia e senza serratura.
+    ghosts:
+      ernesto:
+        name: Ernesto
+        description: Un maggiordomo fantasma impeccabile, con i guanti bianchi e il naso all'insù.
+        personality: >-
+          Maggiordomo formale e pignolo, un po' snob ma leale alla famiglia. Odia il disordine
+          e sospira spesso. Parla per frasi brevi e corrette.
+        knowledge:
+          - text: Gli spartiti di casa finiscono sempre nella libreria, in mezzo ai libri di cucina.
+          - text: La porta dietro l'arazzo porta alla camera dei padroni di casa.
+      ofelia:
+        name: Ofelia
+        description: Una cantante lirica fantasma, con un vestito di piume e la voce tremula.
+        personality: >-
+          Cantante lirica drammatica ed esagerata. Trasforma ogni frase in un piccolo
+          melodramma e a volte canticchia invece di rispondere.
+        knowledge:
+          - text: La porta dietro l'arazzo dorme e si sveglia solo sentendo la sua ninna nanna.
+          - if: { completed: spartito_trovato }
+            text: Lo spartito va suonato al pianoforte, e lei canterà.
+
+  camera_genitori:
+    name: Camera dei genitori
+    description: La camera di mamma e papà. Il lettone è caldo e sicuro.
+    exits:
+      salone:
+        description: La porta nascosta che dà sul salone.
+    ghosts:
+      nonno_fosco:
+        name: Nonno Fosco
+        description: Un vecchio fantasma con la barba lunga fino ai piedi, seduto su una poltrona a dondolo.
+        personality: >-
+          Bisnonno affettuoso e brontolone. Racconta storie lunghissime di quando era vivo
+          e si addormenta a metà.
+        knowledge:
+          - text: Ha vegliato sulla famiglia per cent'anni ed è fiero del bambino.
+      bisnonna_adelina:
+        name: Bisnonna Adelina
+        description: Una fantasma minuta che sferruzza una sciarpa infinita.
+        personality: >-
+          Bisnonna dolce e pratica. Dà consigli su tutto e chiede sempre se il bambino ha
+          mangiato abbastanza.
+        knowledge:
+          - text: I fantasmi della casa hanno aiutato il bambino perché gli vogliono bene.

@@ -52,7 +52,7 @@ rooms:
         states: { chiusa: null, aperta: null }
         actions:
           apri:
-            - if: { has: martello }
+            - if: { visited: soffitta }
               text: Ok.
               effects:
                 - set_state: { scatola: rotta }
@@ -61,9 +61,9 @@ rooms:
 `);
   assert.deepEqual(errors, [
     'rooms.a: chiave sconosciuta "colour" (ammesse: name, description, milestones, exits, objects, ghosts)',
-    'rooms.a.objects.scatola.actions.apri.outcomes[0].effects[2]: effetto sconosciuto "teleport" (ammessi: set_state, give, remove, complete, reveal, hide)',
+    'rooms.a.objects.scatola.actions.apri.outcomes[0].effects[2]: effetto sconosciuto "teleport" (ammessi: set_state, complete, reveal, hide)',
     'goal: stanza sconosciuta "z"',
-    'rooms.a.objects.scatola.actions.apri.outcomes[0].if.has: oggetto d\'inventario sconosciuto "martello"',
+    'rooms.a.objects.scatola.actions.apri.outcomes[0].if.visited: stanza sconosciuta "soffitta"',
     'rooms.a.objects.scatola.actions.apri.outcomes[0].effects[0]: "scatola" non ha lo stato "rotta" (stati: chiusa, aperta)',
     'rooms.a.objects.scatola.actions.apri.outcomes[0].effects[1]: traguardo sconosciuto "boh"',
   ]);
