@@ -73,9 +73,9 @@ export function createAgent(options: AgentOptions): Agent {
   }
   if (!client && provider === 'openai-compatible') {
     const openAIOptions = options.openAICompatible;
-    const baseUrl = openAIOptions?.baseUrl ?? process.env.OPENAI_COMPATIBLE_BASE_URL ?? process.env.OPENAI_BASE_URL
-      ?? (process.env.NVIDIA_API_KEY ? process.env.NVIDIA_BASE_URL ?? 'https://integrate.api.nvidia.com/v1' : undefined);
-    const apiKey = openAIOptions?.apiKey ?? process.env.OPENAI_COMPATIBLE_API_KEY ?? process.env.OPENAI_API_KEY ?? process.env.NVIDIA_API_KEY;
+    const baseUrl = openAIOptions?.baseUrl ?? process.env.NVIDIA_BASE_URL
+      ?? (process.env.NVIDIA_API_KEY ? 'https://integrate.api.nvidia.com/v1' : undefined);
+    const apiKey = openAIOptions?.apiKey ?? process.env.NVIDIA_API_KEY;
     client = createOpenAICompatibleClient({
       ...(baseUrl === undefined ? {} : { baseUrl }),
       ...(apiKey === undefined ? {} : { apiKey }),
@@ -86,11 +86,11 @@ export function createAgent(options: AgentOptions): Agent {
 
   const openAIOptions = options.openAICompatible;
   const toolModel = options.toolModel
-    ?? (provider === 'gemini' ? DEFAULT_TOOL_MODEL : openAIOptions?.toolModel ?? process.env.OPENAI_COMPATIBLE_TOOL_MODEL ?? process.env.OPENAI_MODEL ?? process.env.NVIDIA_TOOL_MODEL ?? process.env.NVIDIA_MODEL ?? (process.env.NVIDIA_API_KEY ? 'deepseek-ai/deepseek-v4.1-flash' : undefined));
+    ?? (provider === 'gemini' ? DEFAULT_TOOL_MODEL : openAIOptions?.toolModel ?? process.env.NVIDIA_MODEL ?? (process.env.NVIDIA_API_KEY ? 'deepseek-ai/deepseek-v4.1-flash' : undefined));
   const narrationModel = options.narrationModel
-    ?? (provider === 'gemini' ? DEFAULT_NARRATION_MODEL : openAIOptions?.narrationModel ?? process.env.OPENAI_COMPATIBLE_NARRATION_MODEL ?? process.env.OPENAI_MODEL ?? process.env.NVIDIA_NARRATION_MODEL ?? process.env.NVIDIA_MODEL ?? toolModel);
+    ?? (provider === 'gemini' ? DEFAULT_NARRATION_MODEL : openAIOptions?.narrationModel ?? process.env.NVIDIA_MODEL ?? toolModel);
   if (!toolModel || !narrationModel) {
-    throw new Error('Set OPENAI_COMPATIBLE_TOOL_MODEL and OPENAI_COMPATIBLE_NARRATION_MODEL, OPENAI_MODEL, or NVIDIA_API_KEY.');
+    throw new Error('Set NVIDIA_API_KEY or configure a compatible provider and model.');
   }
 
   return {

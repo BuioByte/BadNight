@@ -37,7 +37,7 @@ const history = firstTurn.history;
 const nextTurn = await agent.runTurn({ action: 'Go to the hallway.', history });
 ```
 
-Set `GEMINI_API_KEY` in the server-side process environment for Gemini AI Studio. NVIDIA NIM and other Chat Completions endpoints use the same registry through the OpenAI-compatible adapter. For NIM, set `AGENT_PROVIDER=openai-compatible` and `NVIDIA_API_KEY`; the default endpoint is `https://integrate.api.nvidia.com/v1` and the default model is `deepseek-ai/deepseek-v4.1-flash`. Set `NVIDIA_BASE_URL` or `NVIDIA_MODEL` to override them. Keep provider credentials in the server-side environment; do not expose them to browser clients. Tests inject fake clients, so they do not require credentials or tool implementations.
+Set `GEMINI_API_KEY` in the server-side process environment for Gemini AI Studio. NVIDIA NIM and other Chat Completions endpoints use the same registry through the OpenAI-compatible adapter. For NIM, set `AGENT_PROVIDER=openai-compatible` and `NVIDIA_API_KEY`; the default endpoint is `https://integrate.api.nvidia.com/v1` and the default model is `deepseek-ai/deepseek-v4.1-flash`. Set `NVIDIA_BASE_URL` or `NVIDIA_MODEL` to override them. For another compatible endpoint, select `AGENT_PROVIDER=openai-compatible` and pass `baseUrl`, `apiKey`, `toolModel`, and `narrationModel` through `openAICompatible` when creating the agent. Keep provider credentials in the server-side process; do not expose them to browser clients. Tests inject fake clients, so they do not require credentials or tool implementations.
 
 ```sh
 pnpm install

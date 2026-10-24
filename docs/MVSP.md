@@ -4,7 +4,8 @@ This is the security baseline for the local hackfest prototype, informed by the 
 
 ## Controls
 
-- **Secrets:** Keep `GEMINI_API_KEY`, `NVIDIA_API_KEY`, and compatible-provider keys in the backend environment or ignored root `.env`; never place them in Vite variables, browser code, logs, or commits. Revoke any key disclosed in chat or source control.
+- **Secrets:** Keep `GEMINI_API_KEY`, `NVIDIA_API_KEY`, and compatible-provider keys passed through server-side agent options in the backend process or ignored root `.env`; never place them in Vite variables, browser code, logs, or commits. Revoke any key disclosed in chat or source control.
+- **Provider configuration:** The harness reads `AGENT_PROVIDER`, `NVIDIA_BASE_URL`, and `NVIDIA_MODEL` for environment-based NVIDIA setup. Configure other compatible providers through server-side `openAICompatible` options so endpoint and credential selection stays explicit.
 - **Input validation:** Validate API request bodies against the shared JSON Schemas before using player input or game session identifiers.
 - **Least privilege:** Expose only the registered game tools to the agent. Validate tool names and arguments in the harness and keep game rules authoritative in the level engine.
 - **Transport and exposure:** Bind the development API to loopback by default. Do not expose the API or API key to an untrusted network.
