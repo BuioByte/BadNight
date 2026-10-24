@@ -114,8 +114,9 @@ const socket = connect(
     output(msg) {
       story.add(msg);
     },
-    tool() {
+    tool(msg) {
       stir();
+      story.add(msg); // non compare nel racconto, ma conta tra i messaggi della history già mostrati
     },
     error(msg) {
       // Con `seq` è un errore del turno (fa parte della history), senza è un messaggio rifiutato.
