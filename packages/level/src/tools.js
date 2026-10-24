@@ -46,7 +46,7 @@ export const toolDefinitions = [
   {
     name: 'talk',
     description:
-      'Inizia a parlare con un fantasma della stanza. Restituisce la sua personalità e ciò che può rivelare in questo momento della partita.',
+      'Inizia a parlare con un fantasma della stanza. Restituisce la sua personalità, ciò che può rivelare in questo momento della partita e le azioni che si possono fare con lui (da eseguire con act).',
     parameters: {
       type: 'object',
       properties: {
