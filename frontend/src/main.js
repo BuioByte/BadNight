@@ -44,11 +44,33 @@ audioToggle.addEventListener('click', () => {
 
 welcomeAudio.addEventListener('change', () => chooseAudio(welcomeAudio.checked));
 startGame.addEventListener('click', () => {
+  if (startGame.disabled) return;
   chooseAudio(welcomeAudio.checked);
-  welcome.close();
-  story.startNarration();
-  turn.lock('la storia prende vita…');
-  if (engineReady) story.whenIdle(() => turn.ready());
+  startGame.disabled = true;
+  welcome.classList.add('is-opening');
+
+  let entered = false;
+  const enterGame = () => {
+    if (entered) return;
+    entered = true;
+    welcome.close();
+    story.startNarration();
+    turn.lock('la storia prende vita…');
+    if (engineReady) story.whenIdle(() => turn.ready());
+  };
+
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    enterGame();
+    return;
+  }
+
+  const door = $('door-leaf');
+  const fallback = setTimeout(enterGame, 1300);
+  door.addEventListener('transitionend', (event) => {
+    if (event.target !== door || event.propertyName !== 'transform') return;
+    clearTimeout(fallback);
+    enterGame();
+  }, { once: true });
 });
 
 welcome.showModal();
