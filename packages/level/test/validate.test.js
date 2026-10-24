@@ -52,7 +52,7 @@ rooms:
         states: { chiusa: null, aperta: null }
         actions:
           apri:
-            - if: { has: martello }
+            - if: { visited: soffitta }
               text: Ok.
               effects:
                 - set_state: { scatola: rotta }
@@ -63,7 +63,7 @@ rooms:
     'rooms.a: chiave sconosciuta "colour" (ammesse: name, description, milestones, exits, objects, ghosts, asset)',
     'rooms.a.objects.scatola.actions.apri.outcomes[0].effects[2]: effetto sconosciuto "teleport" (ammessi: set_state, give, remove, complete, reveal, hide)',
     'goal: stanza sconosciuta "z"',
-    'rooms.a.objects.scatola.actions.apri.outcomes[0].if.has: oggetto d\'inventario sconosciuto "martello"',
+    'rooms.a.objects.scatola.actions.apri.outcomes[0].if.visited: stanza sconosciuta "soffitta"',
     'rooms.a.objects.scatola.actions.apri.outcomes[0].effects[0]: "scatola" non ha lo stato "rotta" (stati: chiusa, aperta)',
     'rooms.a.objects.scatola.actions.apri.outcomes[0].effects[1]: traguardo sconosciuto "boh"',
   ]);
@@ -115,4 +115,30 @@ test('gli asset sono facoltativi e devono essere identificativi logici validi', 
   assert.equal(Object.hasOwn(level.items.candela, 'asset'), false);
   assert.equal(Object.hasOwn(level.entities.zucca, 'asset'), false);
   assert.equal(Object.hasOwn(level.entities.pip, 'asset'), false);
+});
+
+test('rifiuta riferimenti a item sconosciuti nelle condizioni e negli effetti', () => {
+  const source = assetSource.replace(
+    'zucca: { name: Zucca, asset: object_zucca }',
+    `zucca:
+        name: Zucca
+        actions:
+          apri:
+            - if: { has: mancante }
+              text: Ok.
+              effects:
+                - give: mancante
+                - remove: mancante`,
+  );
+  assert.deepEqual(errorsOf(source), [
+    'rooms.a.objects.zucca.actions.apri.outcomes[0].if.has: item sconosciuto "mancante"',
+    'rooms.a.objects.zucca.actions.apri.outcomes[0].effects[0]: item sconosciuto "mancante"',
+    'rooms.a.objects.zucca.actions.apri.outcomes[0].effects[1]: item sconosciuto "mancante"',
+  ]);
+});
+
+test('rifiuta id condivisi tra inventario ed entita', () => {
+  const errors = errorsOf(assetSource.replace('candela: { name: Candela', 'zucca: { name: Candela'));
+  assert.equal(errors.length, 1);
+  assert.match(errors[0], /rooms\.a\.objects\.zucca: id "zucca" gia|rooms\.a\.objects\.zucca: id "zucca" già/);
 });

@@ -59,7 +59,7 @@ export class Game {
 
   constructor(level, state) {
     this.#level = level;
-    this.#s = state ? structuredClone(state) : initialState(level);
+    this.#s = state ? { inventory: [], ...structuredClone(state) } : initialState(level);
     if (!level.rooms[this.#s.room]) throw new Error(`stato non valido: stanza sconosciuta "${this.#s.room}"`);
   }
 
@@ -112,7 +112,7 @@ export class Game {
         description: e.description,
         open: exitOpen(e, s),
       })),
-      inventory: s.inventory.map((i) => ref(L.items[i])),
+      ...(Object.keys(L.items).length && { inventory: s.inventory.map((i) => ref(L.items[i])) }),
       progress: { visited: s.visited.length, total: Object.keys(L.rooms).length },
       ...(s.won && { won: true }),
     };

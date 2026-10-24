@@ -13,7 +13,7 @@ che importa questo modulo.
 cd packages/level
 npm install
 npm test        # test
-npm run play    # gioca il livello 1 dal terminale, chiamando i tool a mano
+npm run play    # gioca il livello 0 dal terminale, chiamando i tool a mano
 ```
 
 ## Uso dall'engine
@@ -21,7 +21,7 @@ npm run play    # gioca il livello 1 dal terminale, chiamando i tool a mano
 ```js
 import { loadLevelFile, createGame, toolDefinitions } from '@badnight/level';
 
-const level = await loadLevelFile('levels/level-1.yaml'); // lancia LevelError (con .errors) se non è valido
+const level = await loadLevelFile('levels/level-0.yaml'); // lancia LevelError (con .errors) se non è valido
 const game = createGame(level);                           // oppure createGame(level, { state: salvato })
 
 // toolDefinitions: [{ name, description, parameters }] da passare al modello come function declarations.
@@ -38,7 +38,7 @@ così l'agente può correggersi.
 
 | Tool | Argomenti | Risultato |
 | --- | --- | --- |
-| `look` | | `room`, `objects`, `ghosts`, `exits` (con `open`), `inventory`, `progress` |
+| `look` | | `room`, `objects`, `ghosts`, `exits` (con `open`), `progress` |
 | `examine` | `target` | `target`: descrizione (incluso lo stato), `state`, `actions` |
 | `act` | `target`, `action` | `text`, `changes` |
 | `move` | `to` | `text`, `changes` (se l'uscita è chiusa: testo `locked` e `changes` vuoto) |
@@ -53,7 +53,6 @@ e solo le informazioni (`knowledge`) sbloccate dallo stato attuale.
 {
   states: [{ id, name, from, to }],          // stati degli oggetti
   revealed: [{ id, name }], hidden: [...],   // oggetti/fantasmi comparsi o spariti
-  inventory: { added: [...], removed: [...] },
   milestones: [{ id, description }],         // traguardi completati
   exitsUnlocked: [{ from, to }],
   room: { id, name },                        // dopo move
@@ -63,8 +62,10 @@ e solo le informazioni (`knowledge`) sbloccate dallo stato attuale.
 
 ## Formato del livello
 
-Esempio completo: [levels/level-1.yaml](levels/level-1.yaml). Gli id sono in minuscolo con `_`.
-Gli id di oggetti, fantasmi e oggetti d'inventario sono unici in tutto il livello, e lo stesso vale per i traguardi.
+Esempio completo: [levels/level-0.yaml](levels/level-0.yaml). Gli id sono in minuscolo con `_`.
+Gli id di oggetti e fantasmi sono unici in tutto il livello, e lo stesso vale per i traguardi.
+Non c'è inventario: gli oggetti restano nella loro stanza. Un oggetto da trovare si dichiara `hidden: true`
+e compare con l'effetto `reveal`.
 
 ```yaml
 id: livello_1
@@ -77,7 +78,6 @@ goal: camera_genitori     # entrarci fa vincere
 items:                    # oggetti che possono finire nell'inventario
   chiave:
     name: Chiave
-    asset: item_chiave    # opzionale: identificativo grafico
     description: ...
     actions: { ... }      # opzionale, come per gli oggetti
 
@@ -108,11 +108,10 @@ rooms:
           apri:
             description: Suggerimento per l'agente (opzionale).
             outcomes:     # vale il primo con `if` vero
-              - if: { has: chiave }
+              - if: { completed: chiave_trovata }
                 text: La porta si apre.
                 effects:
                   - set_state: { porta: aperta }
-                  - remove: chiave
                   - complete: porta_aperta
               - text: Serve una chiave.
     ghosts:
@@ -150,24 +149,14 @@ possono essere selezionate dal frontend usando anche `state` o i cambiamenti di 
 | Condizione | Vera se |
 | --- | --- |
 | `completed: id` o `[id, ...]` | i traguardi sono completati |
-| `has: id` o `[id, ...]` | gli oggetti sono nell'inventario |
 | `visited: id` o `[id, ...]` | le stanze sono state visitate |
 | `state: { oggetto: stato }` | gli oggetti sono in quello stato |
 | `not: cond` / `all: [cond, ...]` / `any: [cond, ...]` | negazione, e, o |
 
-**Effetti** (`effects`): `set_state: { oggetto: stato }`, `give: item`, `remove: item`,
-`complete: traguardo`, `reveal: oggetto`, `hide: oggetto`.
+**Effetti** (`effects`): `set_state: { oggetto: stato }`, `complete: traguardo`,
+`reveal: oggetto` (lo fa comparire), `hide: oggetto` (lo nasconde).
 
 **Traguardi.** L'engine non completa mai un traguardo i cui prerequisiti non sono completati.
 Un esito che contiene `complete: X` viene quindi saltato finché i prerequisiti di `X` mancano,
 e vale l'esito successivo. Nel livello 1 succede con "guarda sotto il letto", che senza candela accesa
-dà "è troppo buio" invece di rivelare il peluche e completare `peluche_scoperto`.
-
-## Enigmi del livello 1
-
-1. **Cameretta:** prendere la candela dal comodino, inserirla nella zucca e chiedere luce al Conte Sbadiglio.
-2. **Cameretta:** guardare sotto il letto, trovare la caramella finta nel cestino e offrirla al pipistrello di peluche per ottenere la chiave. Aprire la porta e passare al salone.
-3. **Salone:** scegliere sul tavolino il ritratto con il papillon dritto e consegnarlo a Ernesto per ottenere lo spartito. I ritratti errati vengono restituiti e si può cambiare scelta.
-4. **Salone:** premere al pianoforte i tasti zucca, fantasma e pipistrello in questo ordine. Una nota errata azzera la sequenza senza penalità.
-
-Entrare nella camera dei genitori conclude la partita. Non c'è un quinto enigma.
+dà "è troppo buio".

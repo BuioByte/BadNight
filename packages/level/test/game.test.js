@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { createGame, loadLevelFile } from '../src/index.js';
 
 const level = await loadLevelFile(fileURLToPath(new URL('../levels/level-1.yaml', import.meta.url)));
+const levelZero = await loadLevelFile(fileURLToPath(new URL('../levels/level-0.yaml', import.meta.url)));
 
 test('il livello 1 si completa con la soluzione prevista', () => {
   const game = createGame(level);
@@ -26,6 +27,7 @@ test('il livello 1 si completa con la soluzione prevista', () => {
   const results = steps.map(([tool, args]) => game.call(tool, args));
   for (const r of results) assert.equal(r.ok, true, r.error);
 
+
   assert.deepEqual(results[6].changes, {
     states: [{ id: 'porta', name: 'Porta', asset: 'object_porta_cameretta', from: 'chiusa', to: 'aperta' }],
     inventory: { removed: [{ id: 'chiave', name: 'Chiave di ferro', asset: 'item_chiave' }] },
@@ -46,7 +48,7 @@ test('un esito che completa un traguardo viene saltato se mancano i prerequisiti
   const r = game.act('letto', 'guarda_sotto');
   assert.equal(r.text, 'È troppo buio per vedere qualcosa là sotto.');
   assert.deepEqual(r.changes, {});
-  assert.deepEqual(game.state.inventory, []);
+  assert.equal(game.look().objects.some((o) => o.id === 'chiave'), false);
 });
 
 test("un'uscita chiusa non sposta il bambino", () => {
@@ -80,7 +82,9 @@ test('examine mostra stato e azioni, anche per gli oggetti in inventario', () =>
     state: 'chiuso',
     actions: [{ name: 'apri', description: 'Aprire il cassetto.' }],
   });
-  game.act('comodino', 'apri');
+  assert.deepEqual(game.act('comodino', 'apri').changes.inventory.added, [
+    { id: 'candela', name: 'Mozzicone di candela', asset: 'item_candela' },
+  ]);
   assert.equal(game.examine('candela').target.kind, 'item');
 });
 
@@ -164,4 +168,38 @@ test('asset: i livelli senza riferimenti mantengono le risposte precedenti', () 
     { id: 'candela', name: 'Mozzicone di candela' },
   ]);
   assert.deepEqual(game.look().inventory, [{ id: 'candela', name: 'Mozzicone di candela' }]);
+});
+
+test('il livello 0 mantiene la soluzione senza inventario e gli oggetti rivelati', () => {
+  const game = createGame(levelZero);
+  assert.equal(Object.hasOwn(game.look(), 'inventory'), false);
+  const opened = game.act('comodino', 'apri');
+  assert.deepEqual(opened.changes.revealed, [{ id: 'candela', name: 'Mozzicone di candela' }]);
+  assert.equal(Object.hasOwn(opened.changes, 'inventory'), false);
+  assert.equal(game.examine('candela').target.state, 'spenta');
+  const steps = [
+    ['act', { target: 'lady_brina', action: 'chiedi_luce' }],
+    ['act', { target: 'letto', action: 'guarda_sotto' }],
+    ['act', { target: 'porta', action: 'apri' }],
+    ['move', { to: 'salone' }],
+    ['act', { target: 'libreria', action: 'cerca' }],
+    ['act', { target: 'pianoforte', action: 'suona' }],
+    ['move', { to: 'camera_genitori' }],
+  ];
+  for (const [tool, args] of steps) {
+    const result = game.call(tool, args);
+    assert.equal(result.ok, true, result.error);
+  }
+  assert.equal(game.won, true);
+});
+
+test('i salvataggi del livello 0 senza inventario restano compatibili', () => {
+  const game = createGame(levelZero);
+  game.act('comodino', 'apri');
+  const saved = game.state;
+  delete saved.inventory;
+  const resumed = createGame(levelZero, { state: saved });
+  assert.deepEqual(resumed.look(), game.look());
+  assert.equal(resumed.act('lady_brina', 'chiedi_luce').ok, true);
+  assert.ok(resumed.state.completed.includes('candela_accesa'));
 });

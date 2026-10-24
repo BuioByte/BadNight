@@ -73,7 +73,7 @@ export function validateLevel(raw) {
   }
 
   function refs(ids, table, what, path) {
-    for (const id of ids) if (!table[id]) err(path, `${what} sconosciuto "${id}"`);
+    for (const id of ids) if (!table[id]) err(path, `${what} "${id}"`);
   }
 
   function checkState(target, state, path) {
@@ -91,13 +91,13 @@ export function validateLevel(raw) {
       const p = `${path}.${k}`;
       switch (k) {
         case 'completed':
-          refs(idList(v, p), level.milestones, 'traguardo', p);
+          refs(idList(v, p), level.milestones, 'traguardo sconosciuto', p);
           break;
         case 'has':
-          refs(idList(v, p), level.items, "oggetto d'inventario", p);
+          refs(idList(v, p), level.items, 'item sconosciuto', p);
           break;
         case 'visited':
-          refs(idList(v, p), level.rooms, 'stanza', p);
+          refs(idList(v, p), level.rooms, 'stanza sconosciuta', p);
           break;
         case 'state':
           if (!isMap(v)) err(p, 'vuole una mappa { oggetto: stato }');
@@ -141,16 +141,16 @@ export function validateLevel(raw) {
         case 'give':
         case 'remove':
           for (const item of idList(arg, p)) effects.push({ type, item });
-          deferred.push(() => refs(idList(arg, p), level.items, "oggetto d'inventario", p));
+          deferred.push(() => refs(idList(arg, p), level.items, 'item sconosciuto', p));
           break;
         case 'complete':
           for (const milestone of idList(arg, p)) effects.push({ type, milestone });
-          deferred.push(() => refs(idList(arg, p), level.milestones, 'traguardo', p));
+          deferred.push(() => refs(idList(arg, p), level.milestones, 'traguardo sconosciuto', p));
           break;
         case 'reveal':
         case 'hide':
           for (const target of idList(arg, p)) effects.push({ type, target });
-          deferred.push(() => refs(idList(arg, p), level.entities, 'oggetto o fantasma', p));
+          deferred.push(() => refs(idList(arg, p), level.entities, 'oggetto o fantasma sconosciuto', p));
           break;
         default:
           err(p, `effetto sconosciuto "${type}" (ammessi: ${EFFECTS.join(', ')})`);
@@ -194,8 +194,8 @@ export function validateLevel(raw) {
     outro: text(raw, 'outro', 'livello'),
     start: raw.start,
     goal: raw.goal,
-    rooms: {},
     items: {},
+    rooms: {},
     entities: {},
     milestones: {},
   };
@@ -261,7 +261,7 @@ export function validateLevel(raw) {
           : ['name', 'description', 'personality', 'voice', 'knowledge', 'hidden', 'actions', 'asset'];
         if (!keys(e, xp, allowed, kind === 'object' ? ['name'] : ['name', 'personality'])) continue;
         if (level.entities[id] || level.items[id]) {
-          err(xp, `id "${id}" già usato da un altro oggetto, fantasma o oggetto d'inventario`);
+          err(xp, `id "${id}" già usato da un altro oggetto o fantasma`);
           continue;
         }
         if (e.hidden != null && typeof e.hidden !== 'boolean') err(`${xp}.hidden`, 'deve essere true o false');
@@ -313,11 +313,11 @@ export function validateLevel(raw) {
       const p = `rooms.${room.id}.exits.${exit.to}`;
       if (!level.rooms[exit.to]) err(p, `stanza sconosciuta "${exit.to}"`);
       if (exit.to === room.id) err(p, 'una stanza non può uscire su se stessa');
-      refs(exit.requires, level.milestones, 'traguardo', `${p}.requires`);
+      refs(exit.requires, level.milestones, 'traguardo sconosciuto', `${p}.requires`);
     }
   }
   for (const m of Object.values(level.milestones)) {
-    refs(m.requires, level.milestones, 'traguardo', `rooms.${m.room}.milestones.${m.id}.requires`);
+    refs(m.requires, level.milestones, 'traguardo sconosciuto', `rooms.${m.room}.milestones.${m.id}.requires`);
   }
   deferred.forEach((check) => check());
 
