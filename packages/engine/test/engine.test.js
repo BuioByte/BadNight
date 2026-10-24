@@ -7,7 +7,7 @@ import { loadLevelFile } from '@badnight/level';
 import { createEngine, createHttpServer, devAgent } from '../src/index.js';
 
 const level = await loadLevelFile(
-  fileURLToPath(new URL('../levels/level-1.yaml', import.meta.resolve('@badnight/level'))),
+  fileURLToPath(new URL('../test/fixtures/level-test.yaml', import.meta.resolve('@badnight/level'))),
 );
 
 // Raccoglie i messaggi emessi dall'engine.

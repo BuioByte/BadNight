@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
 import { createGame, loadLevelFile } from '../src/index.js';
 
-const level = await loadLevelFile(fileURLToPath(new URL('../levels/level-1.yaml', import.meta.url)));
+const level = await loadLevelFile(fileURLToPath(new URL('fixtures/level-test.yaml', import.meta.url)));
 
 test('il livello 1 si completa con la soluzione prevista', () => {
   const game = createGame(level);
