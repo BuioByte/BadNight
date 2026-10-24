@@ -8,11 +8,14 @@ The application using the harness is responsible for:
 
 - Registering each available tool with its name, description, JSON Schema parameters, and an async or sync handler.
 - Providing a `systemInstruction` and a registry when creating an agent.
+- Optionally setting `maxToolRounds` in `createAgent` to bound tool-call rounds (defaults to 8).
 - Passing the player's `action`, optional `thinking`, and that conversation's prior `history` to `runTurn`.
 - Keeping the returned `history` with the conversation and passing it to the next turn.
 - Binding handlers to the correct application state or session. A handler returns a JSON-serializable object; the harness validates its arguments and passes its result back to the model.
 
 `runTurn` returns `{ text, history }`. `text` is the player-facing narration. `history` includes the new input, model replies, and tool results and should be treated as opaque conversation state. Create or configure registries so handlers can only access the state intended for that conversation.
+
+If either model returns an empty or thinking-only response, the harness retries that model once with a corrective instruction to produce a clear answer. A second empty response raises `AgentResponseError`.
 
 ```ts
 import { createAgent, createToolRegistry } from '@badnight/agent-harness';

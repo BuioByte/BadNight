@@ -19,3 +19,7 @@ This is the security baseline for the local hackfest prototype, informed by the 
 - **TLS and production deployment controls:** The app is intended for local hackfest use and has no production hosting configuration.
 - **Persistent data backup and deletion workflows:** Game state exists only in process memory and is discarded on restart.
 - **Automated vulnerability scanning and incident response:** This prototype has no production release pipeline or operator rotation. Add both before production use.
+
+## Harness response retry
+
+The harness treats provider output as untrusted, validates tool names and arguments, and retries empty model responses once with a corrective prompt. It fails with a typed error if the retry is also empty. This change adds no data storage, credentials, or network endpoint.

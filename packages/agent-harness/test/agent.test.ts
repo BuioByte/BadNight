@@ -24,7 +24,7 @@ function fakeClient(responses: GenerateContentResponse[]) {
   const client = {
     models: {
       generateContent: async (request: unknown) => {
-        requests.push(request);
+        requests.push(structuredClone(request));
         const response = responses.shift();
         if (!response) throw new Error('Unexpected model request.');
         return response;
@@ -74,6 +74,24 @@ test('returns a direct model response and appends the turn to history', async ()
   assert.deepEqual(result.history.map((item) => item.role), ['user', 'model', 'model']);
   const firstRequest = requests[0] as { contents: { parts: { text?: string }[] }[] };
   assert.equal(firstRequest.contents[0]?.parts[0]?.text, 'Action: What do I see?');
+});
+
+test('retries thinking-only tool and narration responses with corrective feedback', async () => {
+  const { client, requests } = fakeClient([
+    modelResponse([{ text: 'I should think through this.' }], '  '),
+    modelResponse([{ text: 'I checked the room.' }], 'I checked the room.'),
+    modelResponse([{ text: 'Only internal thinking.' }], ''),
+    modelResponse([{ text: 'The room is quiet, but the wardrobe creaks.' }], 'The room is quiet, but the wardrobe creaks.'),
+  ]);
+  const agent = createAgent({ client, systemInstruction: 'Be gentle.', registry: createToolRegistry() });
+
+  const result = await agent.runTurn({ action: 'What do I hear?' });
+
+  assert.match(result.text, /wardrobe creaks/);
+  const toolRetry = requests[1] as { contents: Content[] };
+  const narrationRetry = requests[3] as { contents: Content[] };
+  assert.match(toolRetry.contents.at(-1)?.parts?.[0]?.text ?? '', /previous turn returned only thinking or an empty message/);
+  assert.match(narrationRetry.contents.at(-1)?.parts?.[0]?.text ?? '', /Generate a clear answer for the user/);
 });
 
 test('rejects a blank action before contacting the model', async () => {
