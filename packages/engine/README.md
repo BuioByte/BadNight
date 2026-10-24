@@ -14,7 +14,7 @@ corepack pnpm --filter @badnight/engine test
 ```
 
 ```
-badnight [--level file.yaml] [--port 3000] [--host 127.0.0.1] [--agent ai|dev]
+badnight [--level file.yaml] [--port 3000] [--host 127.0.0.1] [--agent ai|dev] [--web cartella]
 ```
 
 - `--level`: default `packages/level/levels/level-1.yaml`. I test dell'engine usano un livello minimo tutto loro, `test/fixtures/level.yaml`.
@@ -22,6 +22,8 @@ badnight [--level file.yaml] [--port 3000] [--host 127.0.0.1] [--agent ai|dev]
   nella radice del repo (vedi il README principale). `--agent dev`: l'agente di sviluppo a comandi testuali.
   Senza `--agent`: `ai` se è impostato `GEMINI_API_KEY` o `AGENT_PROVIDER`, altrimenti `dev`.
   La console mostra quale agente è attivo.
+- `--web`: la cartella della pagina da servire. Senza `--web`: il frontend compilato (`frontend/dist`, lo crea
+  `corepack pnpm start` dalla radice) se c'è, altrimenti la pagina provvisoria `public/`. La console mostra quale.
 - Se la porta è occupata l'engine prova le successive.
 
 `start` e `test` compilano prima il harness (TypeScript).
@@ -37,7 +39,7 @@ badnight [--level file.yaml] [--port 3000] [--host 127.0.0.1] [--agent ai|dev]
 | `src/dev-agent.js` | agente di sviluppo a comandi testuali |
 | `src/http.js` | server HTTP: file statici da `public/` |
 | `src/ws.js` | WebSocket su `/ws` |
-| `public/` | pagina web servita: per ora una pagina provvisoria; il frontend ([`frontend`](../../frontend/README.md)) può compilarsi qui con `npm run build:engine` |
+| `public/` | pagina provvisoria, servita solo se il frontend ([`frontend`](../../frontend/README.md)) non è compilato |
 
 ## Il turno
 

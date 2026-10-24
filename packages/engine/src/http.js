@@ -2,7 +2,7 @@
 
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
-import { extname, join, normalize, sep } from 'node:path';
+import { extname, join, normalize, resolve, sep } from 'node:path';
 import { attachWebSocket } from './ws.js';
 
 const WS_CLOSE_GRACE = 1000;
@@ -18,11 +18,16 @@ const TYPES = {
   '.webp': 'image/webp',
   '.mp3': 'audio/mpeg',
   '.ogg': 'audio/ogg',
+  '.wav': 'audio/wav',
+  '.webm': 'video/webm',
+  '.mp4': 'video/mp4',
+  '.woff': 'font/woff',
   '.woff2': 'font/woff2',
   '.ico': 'image/x-icon',
 };
 
 export function createHttpServer(engine, { publicDir }) {
+  publicDir = resolve(publicDir);
   const server = createServer(async (req, res) => {
     try {
       await serveStatic(publicDir, req, res);
